@@ -1,0 +1,213 @@
+:root {
+  --bg: #030808;
+  --panel: rgba(5, 15, 15, 0.98);
+  --accent: #00f3ff;
+  --text: #ffffff;
+  --border: rgba(0, 243, 255, 0.15);
+  --font-tech: 'Orbitron', sans-serif;
+  --font-main: 'Inter', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-main);
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden; /* Evita scroll horizontal */
+}
+
+/* Fondo decorativo */
+.grid-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
+  linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px; /* Reducido para mejor escala en móvil */
+  z-index: -1;
+  opacity: 0.2;
+}
+
+.scanline {
+  width: 100%; height: 100px; z-index: 10;
+  background: linear-gradient(0deg, transparent 0%, rgba(0, 243, 255, 0.05) 50%, transparent 100%);
+  position: fixed; bottom: 100%;
+  animation: scan 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scan { from { bottom: 100%; } to { bottom: -120%; } }
+
+/* Contenedor de la Aplicación */
+#app {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.hidden { display: none !important; }
+
+/* La Tarjeta Principal */
+.cyber-card {
+  background: var(--panel);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+  padding: 40px 20px;
+  width: 100%;
+  max-width: 1100px;
+  border-left: 6px solid var(--accent);
+  position: relative;
+}
+
+/* Tipografía */
+.title-glow {
+  font-family: var(--font-tech);
+  font-size: 1.8rem; /* Tamaño adaptado */
+  letter-spacing: 4px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px var(--accent);
+}
+
+.subtitle {
+  font-size: 0.7rem;
+  letter-spacing: 4px;
+  opacity: 0.6;
+  margin-bottom: 30px;
+}
+
+/* Grid de Selección */
+.selector-container {
+  display: flex;
+  flex-direction: column; /* Apilado por defecto para móvil */
+  gap: 30px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.profile-card {
+  width: 180px;
+  cursor: pointer;
+  transition: 0.4s ease;
+}
+
+.img-wrapper {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 10px;
+  background: #000;
+  position: relative;
+}
+
+.profile-card img { width: 100%; height: 100%; object-fit: cover; }
+.profile-card .name { font-family: var(--font-tech); font-size: 1.1rem; margin-top: 5px; letter-spacing: 2px; }
+
+/* Mario Bloqueado */
+.locked { opacity: 0.5; cursor: not-allowed; }
+.lock-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; }
+.badge { color: #ff3333; font-size: 0.7rem; display: block; margin-top: 5px; font-weight: bold; }
+
+/* HUD Avatar */
+.hud-frame {
+  width: 250px;
+  height: 250px;
+  border: 1px solid var(--accent);
+  margin: 0 auto 25px;
+  padding: 10px;
+}
+#friend-avatar { width: 100%; height: 100%; object-fit: cover; }
+#data-name { font-family: var(--font-tech); font-size: 1.8rem; margin-bottom: 30px; }
+
+/* Terminal */
+.terminal-text {
+  font-family: monospace;
+  font-size: 0.8rem;
+  text-align: left;
+  min-height: 100px;
+}
+.progress-container {
+  width: 100%;
+  height: 10px;
+  background: rgba(0, 243, 255, 0.1);
+  margin-top: 20px;
+}
+#progress-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.3s; }
+
+/* Pantalla Final */
+.message-header {
+  color: var(--accent);
+  font-family: var(--font-tech);
+  font-size: 0.8rem;
+  text-align: left;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+#personal-message {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-align: left;
+  margin-bottom: 30px;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas en móvil */
+  gap: 10px;
+}
+
+.photo-grid img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Botones */
+.sci-fi-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  padding: 15px 30px;
+  font-family: var(--font-tech);
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 30px;
+  transition: 0.3s;
+  letter-spacing: 2px;
+  width: 100%; /* Botón ancho en móvil */
+}
+
+/* --- DESKTOP ADAPTATIONS (Media Queries) --- */
+@media (min-width: 768px) {
+  .title-glow { font-size: 3rem; }
+  .cyber-card { padding: 80px; width: 90%; }
+  .selector-container { flex-direction: row; gap: 50px; }
+  .profile-card { width: 250px; }
+  .hud-frame { width: 400px; height: 400px; }
+  #data-name { font-size: 4rem; }
+  #personal-message { font-size: 1.4rem; }
+  .photo-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .sci-fi-btn { width: auto; padding: 20px 60px; font-size: 1.1rem; }
+  .grid-overlay { background-size: 80px 80px; }
+}
+
+.profile-card:not(.locked):active { transform: scale(0.95); } /* Feedback táctil */

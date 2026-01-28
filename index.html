@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Memoria Digital | Protocolo de Recuperación</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="grid-overlay"></div>
+<div class="scanline"></div>
+
+<main id="app">
+  <section id="selector-screen" class="screen">
+    <div class="cyber-card">
+      <header class="card-header">
+        <h2 class="title-glow">SISTEMA DE MEMORIA</h2>
+        <p class="subtitle">ESTADO: EN LÍNEA</p>
+      </header>
+
+      <div class="selector-container">
+        <div class="profile-card" onclick="launchPortal('Sara')">
+          <div class="img-wrapper">
+            <img src="img/Sara.jpg" alt="Sara">
+          </div>
+          <p class="name">SARA</p>
+        </div>
+
+        <div class="profile-card" onclick="launchPortal('Andrea')">
+          <div class="img-wrapper">
+            <img src="img/Andrea.jpg" alt="Andrea">
+          </div>
+          <p class="name">ANDREA</p>
+        </div>
+
+        <div class="profile-card locked">
+          <div class="img-wrapper">
+            <img src="img/Mario.jpg" alt="Mario">
+            <div class="lock-overlay">🔒</div>
+          </div>
+          <p class="name">MARIO</p>
+          <span class="badge">ACCESO DENEGADO</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="loading-screen" class="screen hidden">
+    <div class="cyber-card small-card">
+      <div id="terminal-output" class="terminal-text"></div>
+      <div class="progress-container">
+        <div id="progress-fill"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="portal-screen" class="screen hidden">
+    <div class="cyber-card">
+      <div class="hud-frame">
+        <img id="friend-avatar" src="" alt="Avatar">
+      </div>
+      <h1 id="data-name">---</h1>
+      <button id="access-btn" class="sci-fi-btn">RECONSTRUIR NÚCLEO</button>
+    </div>
+  </section>
+
+  <section id="capsule-screen" class="screen hidden">
+    <div class="cyber-card wide-card">
+      <div class="message-header">MENSAJE ENCRIPTADO REPRODUCIENDO...</div>
+      <p id="personal-message"></p>
+      <div class="photo-grid" id="photo-grid"></div>
+      <div class="btn-footer">
+        <button onclick="location.reload()" class="sci-fi-btn">TERMINAR SESIÓN</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>
