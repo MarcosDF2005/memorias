@@ -71,7 +71,7 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 28px;
+  padding: clamp(20px, 4vw, 40px);
 }
 
 .hidden { display: none !important; }
@@ -81,9 +81,8 @@ body {
   background: linear-gradient(180deg, var(--panel) 0%, var(--panel-strong) 100%);
   border: 1px solid var(--accent-soft);
   box-shadow: 0 20px 60px var(--shadow), 0 0 30px rgba(0, 243, 255, 0.08);
-  padding: 44px 24px;
-  width: 100%;
-  max-width: 1100px;
+  padding: clamp(28px, 5vw, 80px) clamp(20px, 4vw, 60px);
+  width: min(92vw, 1100px);
   border-left: 6px solid var(--accent);
   border-radius: var(--radius);
   position: relative;
@@ -113,14 +112,14 @@ body {
 /* Tipografía */
 .title-glow {
   font-family: var(--font-tech);
-  font-size: 1.9rem; /* Tamaño adaptado */
+  font-size: clamp(1.6rem, 4vw, 3rem);
   letter-spacing: 4px;
   margin-bottom: 12px;
   text-shadow: 0 0 14px var(--accent-glow);
 }
 
 .subtitle {
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 2.2vw, 0.9rem);
   letter-spacing: 4px;
   opacity: 0.65;
   margin-bottom: 32px;
@@ -130,15 +129,16 @@ body {
 /* Grid de Selección */
 .selector-container {
   display: flex;
-  flex-direction: column; /* Apilado por defecto para móvil */
-  gap: 30px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: clamp(16px, 4vw, 50px);
   justify-content: center;
   align-items: center;
   margin-top: 10px;
 }
 
 .profile-card {
-  width: 190px;
+  width: clamp(140px, 24vw, 250px);
   cursor: pointer;
   transition: 0.4s ease;
   transform-style: preserve-3d;
@@ -166,7 +166,7 @@ body {
 }
 .profile-card .name {
   font-family: var(--font-tech);
-  font-size: 1.05rem;
+  font-size: clamp(0.85rem, 2.2vw, 1.1rem);
   margin-top: 6px;
   letter-spacing: 2px;
   color: var(--text-dim);
@@ -179,8 +179,8 @@ body {
 
 /* HUD Avatar */
 .hud-frame {
-  width: 250px;
-  height: 250px;
+  width: clamp(220px, 50vw, 400px);
+  height: clamp(220px, 50vw, 400px);
   border: 1px solid var(--accent);
   margin: 0 auto 25px;
   padding: 10px;
@@ -188,12 +188,17 @@ body {
   box-shadow: 0 0 30px rgba(0, 243, 255, 0.08);
 }
 #friend-avatar { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
-#data-name { font-family: var(--font-tech); font-size: 1.8rem; margin-bottom: 30px; text-shadow: 0 0 12px rgba(0, 243, 255, 0.25); }
+#data-name {
+  font-family: var(--font-tech);
+  font-size: clamp(1.5rem, 5vw, 4rem);
+  margin-bottom: 30px;
+  text-shadow: 0 0 12px rgba(0, 243, 255, 0.25);
+}
 
 /* Terminal */
 .terminal-text {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.85rem;
+  font-size: clamp(0.75rem, 2.4vw, 0.9rem);
   text-align: left;
   min-height: 110px;
   color: var(--text-dim);
@@ -227,7 +232,7 @@ body {
 }
 
 #personal-message {
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 3vw, 1.4rem);
   line-height: 1.7;
   text-align: left;
   margin-bottom: 30px;
@@ -236,8 +241,8 @@ body {
 
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columnas en móvil */
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: clamp(10px, 2vw, 20px);
 }
 
 .photo-grid img {
@@ -254,14 +259,14 @@ body {
   background: transparent;
   color: var(--accent);
   border: 2px solid var(--accent);
-  padding: 15px 30px;
+  padding: clamp(12px, 2.6vw, 20px) clamp(24px, 6vw, 60px);
   font-family: var(--font-tech);
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 2.6vw, 1.1rem);
   cursor: pointer;
   margin-top: 30px;
   transition: 0.3s;
   letter-spacing: 2px;
-  width: 100%; /* Botón ancho en móvil */
+  width: auto;
   border-radius: 999px;
   position: relative;
   overflow: hidden;
@@ -278,15 +283,7 @@ body {
 
 /* --- DESKTOP ADAPTATIONS (Media Queries) --- */
 @media (min-width: 768px) {
-  .title-glow { font-size: 3rem; }
-  .cyber-card { padding: 80px; width: 90%; }
-  .selector-container { flex-direction: row; gap: 50px; }
-  .profile-card { width: 250px; }
-  .hud-frame { width: 400px; height: 400px; }
-  #data-name { font-size: 4rem; }
-  #personal-message { font-size: 1.4rem; }
-  .photo-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
-  .sci-fi-btn { width: auto; padding: 20px 60px; font-size: 1.1rem; }
+  .photo-grid { grid-template-columns: repeat(4, 1fr); }
   .grid-overlay { background-size: 80px 80px; }
 }
 
