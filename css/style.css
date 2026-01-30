@@ -1,17 +1,26 @@
 :root {
   --bg: #030808;
-  --panel: rgba(5, 15, 15, 0.98);
+  --bg-deep: #020505;
+  --panel: rgba(5, 15, 15, 0.96);
+  --panel-strong: rgba(10, 25, 25, 0.85);
   --accent: #00f3ff;
+  --accent-soft: rgba(0, 243, 255, 0.35);
+  --accent-glow: rgba(0, 243, 255, 0.65);
   --text: #ffffff;
+  --text-dim: rgba(255, 255, 255, 0.7);
   --border: rgba(0, 243, 255, 0.15);
+  --shadow: rgba(0, 0, 0, 0.65);
   --font-tech: 'Orbitron', sans-serif;
   --font-main: 'Inter', sans-serif;
+  --radius: 18px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: var(--bg);
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(0, 243, 255, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 85% 15%, rgba(0, 243, 255, 0.06), transparent 60%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
   color: var(--text);
   font-family: var(--font-main);
   min-height: 100vh;
@@ -23,12 +32,17 @@ body {
 
 /* Fondo decorativo */
 .grid-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background-image: linear-gradient(var(--border) 1px, transparent 1px),
-  linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 40px 40px; /* Reducido para mejor escala en móvil */
   z-index: -1;
-  opacity: 0.2;
+  opacity: 0.18;
+  filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.15));
 }
 
 .scanline {
@@ -57,37 +71,60 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 20px;
+  padding: 28px;
 }
 
 .hidden { display: none !important; }
 
 /* La Tarjeta Principal */
 .cyber-card {
-  background: var(--panel);
-  border: 1px solid var(--accent);
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
-  padding: 40px 20px;
+  background: linear-gradient(180deg, var(--panel) 0%, var(--panel-strong) 100%);
+  border: 1px solid var(--accent-soft);
+  box-shadow: 0 20px 60px var(--shadow), 0 0 30px rgba(0, 243, 255, 0.08);
+  padding: 44px 24px;
   width: 100%;
   max-width: 1100px;
   border-left: 6px solid var(--accent);
+  border-radius: var(--radius);
   position: relative;
+  overflow: hidden;
+}
+
+.cyber-card::before,
+.cyber-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+
+.cyber-card::before {
+  border: 1px solid rgba(0, 243, 255, 0.12);
+  box-shadow: inset 0 0 40px rgba(0, 243, 255, 0.08);
+  opacity: 0.9;
+}
+
+.cyber-card::after {
+  background: radial-gradient(600px 200px at 20% -10%, rgba(0, 243, 255, 0.08), transparent 65%);
+  opacity: 0.6;
 }
 
 /* Tipografía */
 .title-glow {
   font-family: var(--font-tech);
-  font-size: 1.8rem; /* Tamaño adaptado */
+  font-size: 1.9rem; /* Tamaño adaptado */
   letter-spacing: 4px;
-  margin-bottom: 10px;
-  text-shadow: 0 0 10px var(--accent);
+  margin-bottom: 12px;
+  text-shadow: 0 0 14px var(--accent-glow);
 }
 
 .subtitle {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 4px;
-  opacity: 0.6;
-  margin-bottom: 30px;
+  opacity: 0.65;
+  margin-bottom: 32px;
+  color: var(--text-dim);
 }
 
 /* Grid de Selección */
@@ -101,9 +138,10 @@ body {
 }
 
 .profile-card {
-  width: 180px;
+  width: 190px;
   cursor: pointer;
   transition: 0.4s ease;
+  transform-style: preserve-3d;
 }
 
 .img-wrapper {
@@ -111,13 +149,28 @@ body {
   aspect-ratio: 1/1;
   border: 1px solid var(--border);
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   background: #000;
   position: relative;
+  border-radius: 12px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.6);
 }
 
-.profile-card img { width: 100%; height: 100%; object-fit: cover; }
-.profile-card .name { font-family: var(--font-tech); font-size: 1.1rem; margin-top: 5px; letter-spacing: 2px; }
+.profile-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  transition: 0.35s ease;
+  filter: contrast(1.05) saturate(1.05);
+}
+.profile-card .name {
+  font-family: var(--font-tech);
+  font-size: 1.05rem;
+  margin-top: 6px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+}
 
 /* Mario Bloqueado */
 .locked { opacity: 0.5; cursor: not-allowed; }
@@ -131,41 +184,54 @@ body {
   border: 1px solid var(--accent);
   margin: 0 auto 25px;
   padding: 10px;
+  border-radius: 16px;
+  box-shadow: 0 0 30px rgba(0, 243, 255, 0.08);
 }
-#friend-avatar { width: 100%; height: 100%; object-fit: cover; }
-#data-name { font-family: var(--font-tech); font-size: 1.8rem; margin-bottom: 30px; }
+#friend-avatar { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+#data-name { font-family: var(--font-tech); font-size: 1.8rem; margin-bottom: 30px; text-shadow: 0 0 12px rgba(0, 243, 255, 0.25); }
 
 /* Terminal */
 .terminal-text {
-  font-family: monospace;
-  font-size: 0.8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85rem;
   text-align: left;
-  min-height: 100px;
+  min-height: 110px;
+  color: var(--text-dim);
 }
 .progress-container {
   width: 100%;
   height: 10px;
   background: rgba(0, 243, 255, 0.1);
   margin-top: 20px;
+  border-radius: 999px;
+  overflow: hidden;
 }
-#progress-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.3s; }
+#progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #6cfffb);
+  width: 0%;
+  transition: 0.3s;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.45);
+}
 
 /* Pantalla Final */
 .message-header {
   color: var(--accent);
   font-family: var(--font-tech);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   text-align: left;
   margin-bottom: 20px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 10px;
+  padding-bottom: 12px;
+  letter-spacing: 2px;
 }
 
 #personal-message {
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 1.05rem;
+  line-height: 1.7;
   text-align: left;
   margin-bottom: 30px;
+  color: var(--text-dim);
 }
 
 .photo-grid {
@@ -178,7 +244,9 @@ body {
   width: 100%;
   aspect-ratio: 1/1;
   object-fit: cover;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* Botones */
@@ -194,6 +262,18 @@ body {
   transition: 0.3s;
   letter-spacing: 2px;
   width: 100%; /* Botón ancho en móvil */
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sci-fi-btn::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+  transform: translateX(-120%);
+  transition: transform 0.5s ease;
 }
 
 /* --- DESKTOP ADAPTATIONS (Media Queries) --- */
@@ -211,3 +291,20 @@ body {
 }
 
 .profile-card:not(.locked):active { transform: scale(0.95); } /* Feedback táctil */
+
+.profile-card:not(.locked):hover {
+  transform: translateY(-6px);
+}
+
+.profile-card:not(.locked):hover img {
+  transform: scale(1.07);
+}
+
+.sci-fi-btn:hover {
+  background: rgba(0, 243, 255, 0.08);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+}
+
+.sci-fi-btn:hover::after {
+  transform: translateX(120%);
+}
