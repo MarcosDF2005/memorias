@@ -1,5 +1,5 @@
 {
-  "friendOrder": ["Andrea", "Sara", "Mario"],
+  "friendOrder": ["Andrea", "Sara", "Mario", "Sara Chacon", "Nuno", "Lucia", "Jimena", "Eva", "Sara Chimeno", "Aaron"],
   "terminalStrings": [
     "> Verificando si hay mesa libre en La China...",
     "> Analizando tasa de alcohol en sangre...",
@@ -15,7 +15,7 @@
       "color": "#7e637c",
       "fotos": ["img/Andrea_1.jpeg", "img/Andrea_2.jpeg", "img/Andrea_3.jpeg", "img/Andrea_4.jpeg"],
       "memorias": [
-        { "fecha": "2024-06", "titulo": "Noche en La China", "contenido": "La noche que no olvidaremos.", "fotos": ["img/Andrea_1.jpeg"] }
+        
       ]
     },
     "Sara": {
@@ -26,7 +26,7 @@
       "color": "#00f3ff",
       "fotos": ["img/Sara_1.jpeg", "img/Sara_2.jpeg", "img/Sara_3.jpeg", "img/Sara_4.jpeg"],
       "memorias": [
-        { "fecha": "2024-09", "titulo": "Comienzo de curso", "contenido": "Otro año más juntos.", "fotos": [] }
+        
       ]
     },
     "Mario": {
@@ -36,7 +36,86 @@
       "avatar": "img/Mario.jpg",
       "color": "#ffaa00",
       "fotos": ["img/Mario_1.jpeg", "img/Mario_2.jpeg", "img/Mario_3.jpeg", "img/Mario_4.jpeg"],
-      "memorias": []
+      "memorias": [
+
+      ]
+    },
+    "Sara Chacon": {
+      "nombre": "Sara Chacon",
+      "cumpleanos": "",
+      "msj": "¡FELIZ CUMPLEAÑOS Sara! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
+      "avatar": "img/Sara_Chacon.jpg",
+      "color": "#00f3ff",
+      "fotos": ["img/Sara_Chacon_1.jpeg", "img/Sara_Chacon_2.jpeg", "img/Sara_Chacon_3.jpeg", "img/Sara_Chacon_4.jpeg"],
+      "memorias": [
+        
+      ]
+    },
+    "Lucia": {
+      "nombre": "Lucia",
+      "cumpleanos": "6-12",
+      "msj": "¡FELIZ CUMPLEAÑOS Lucia! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
+      "avatar": "img/Lucia.jpg",
+      "color": "#00f3ff",
+      "fotos": ["img/Lucia_1.jpeg", "img/Lucia_2.jpeg", "img/Lucia_3.jpeg", "img/Lucia_4.jpeg"],
+      "memorias": [
+
+      ]
+    },
+    "Nuno": {
+      "nombre": "Nuno",
+      "cumpleanos": "6-28",
+      "msj": "¡FELIZ CUMPLEAÑOS Nuno! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
+      "avatar": "img/Nuno.jpg",
+      "color": "#00f3ff",
+      "fotos": ["img/Nuno_1.jpeg", "img/Nuno_2.jpeg", "img/Nuno_3.jpeg", "img/Nuno_4.jpeg"],
+      "memorias": [
+
+      ]
+    },
+    "Jimena": {
+      "nombre": "Jimena",
+      "cumpleanos": "10-8",
+      "msj": "¡FELIZ CUMPLEAÑOS Jimena! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
+      "avatar": "img/Jimena.jpg",
+      "color": "#00f3ff",
+      "fotos": ["img/Jimena_1.jpeg", "img/Jimena_2.jpeg", "img/Jimena_3.jpeg", "img/Jimena_4.jpeg"],
+      "memorias": [
+
+      ]
+    },
+    "Eva": {
+      "nombre": "Eva",
+      "cumpleanos": "",
+      "msj": "¡FELIZ CUMPLEAÑOS Eva! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
+      "avatar": "img/Eva.jpg",
+      "color": "#00f3ff",
+      "fotos": ["img/Eva_1.jpeg", "img/Eva_2.jpeg", "img/Eva_3.jpeg", "img/Eva_4.jpeg"],
+      "memorias": [
+
+      ]
+    },
+    "Sara Chimeno": {
+      "nombre": "Sara Chimeno",
+      "cumpleanos": "11-28",
+      "msj": "¡FELIZ CUMPLEAÑOS Sara! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
+      "avatar": "img/Sara_Chimeno.jpg",
+      "color": "#00f3ff",
+      "fotos": ["img/Sara_Chimeno_1.jpeg", "img/Sara_Chimeno_2.jpeg", "img/Sara_Chimeno_3.jpeg", "img/Sara_Chimeno_4.jpeg"],
+      "memorias": [
+
+      ]
+    },
+    "Aaron": {
+      "nombre": "Aaron",
+      "cumpleanos": "12-12",
+      "msj": "¡FELIZ CUMPLEAÑOS Aaron! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
+      "avatar": "img/Aaron.jpg",
+      "color": "#00f3ff",
+      "fotos": ["img/Aaron_1.jpeg", "img/Aaron_2.jpeg", "img/Aaron_3.jpeg", "img/Aaron_4.jpeg"],
+      "memorias": [
+
+      ]
     }
   },
   "calendario": [
@@ -47,22 +126,12 @@
   "eventos": [
 
   ],
-  "moments": [
-
-  ],
   "capsulasTiempo": [
     {
       "fechaApertura": "12-31",
-      "titulo": "Cápsula Fin de Año 2024",
+      "titulo": "Cápsula Fin de Año 2026",
       "mensajes": [
         
-      ]
-    },
-    {
-      "fechaApertura": "06-15",
-      "titulo": "Cápsula Aniversario del Grupo",
-      "mensajes": [
-      
       ]
     }
   ]

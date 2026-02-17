@@ -1,6 +1,7 @@
 // Config cargada desde JSON (se rellena al iniciar)
 let config = null;
 let currentFriendId = null;
+let currentUser = null; // { userId, nombre, avatar }
 
 const API_BASE = "";
 const STORAGE_CALENDARIO = "memoria_calendario";
@@ -97,11 +98,45 @@ async function deleteEventoApi(id) {
 
 /** Comprueba si el portal está abierto: hoy es su cumple o ya pasó este año */
 function isUnlocked(cumpleanos) {
+  if (!cumpleanos || !/^\d{1,2}-\d{1,2}$/.test(cumpleanos)) return false;
   const hoy = new Date();
   const [cumpleMes, cumpleDia] = cumpleanos.split("-").map(Number);
   const hoyNum = (hoy.getMonth() + 1) * 100 + hoy.getDate();
   const cumpleNum = cumpleMes * 100 + cumpleDia;
   return hoyNum >= cumpleNum;
+}
+
+/** Devuelve la lista de amigos visibles: los que ya cumplieron (unlocked) + el siguiente por fecha (locked) */
+function getVisiblePortalUsers() {
+  if (!config) return [];
+  const hoy = new Date();
+  const hoyNum = (hoy.getMonth() + 1) * 100 + hoy.getDate();
+
+  const withCumple = config.friendOrder
+    .map(userId => ({ userId, data: config.friends[userId] }))
+    .filter(({ data }) => data && data.cumpleanos && /^\d{1,2}-\d{1,2}$/.test(data.cumpleanos));
+
+  const passed = [];
+  const future = [];
+  for (const { userId, data } of withCumple) {
+    const [mes, dia] = data.cumpleanos.split("-").map(Number);
+    const cumpleNum = mes * 100 + dia;
+    if (cumpleNum <= hoyNum) {
+      passed.push({ userId, data, cumpleNum });
+    } else {
+      future.push({ userId, data, cumpleNum });
+    }
+  }
+  passed.sort((a, b) => a.cumpleNum - b.cumpleNum);
+  future.sort((a, b) => a.cumpleNum - b.cumpleNum);
+
+  const nextLocked = future[0];
+  const visible = passed.map(p => ({ userId: p.userId, data: p.data, unlocked: true, cumpleNum: p.cumpleNum }));
+  if (nextLocked && !visible.find(v => v.userId === nextLocked.userId)) {
+    visible.push({ userId: nextLocked.userId, data: nextLocked.data, unlocked: false, cumpleNum: nextLocked.cumpleNum });
+  }
+  visible.sort((a, b) => a.cumpleNum - b.cumpleNum);
+  return visible;
 }
 
 /** Comprueba si una fecha MM-DD ya pasó este año */
@@ -151,7 +186,6 @@ function renderHub() {
     { id: "portales", icon: "🎂", titulo: "PORTALES", subtitulo: "Felicitaciones por cumpleaños", screen: "selector-screen" },
     { id: "calendario", icon: "📅", titulo: "CALENDARIO", subtitulo: "Fechas importantes", screen: "calendar-screen" },
     { id: "eventos", icon: "🎉", titulo: "EVENTOS", subtitulo: "Viajes y salidas", screen: "eventos-screen" },
-    { id: "moments", icon: "⚡", titulo: "MOMENTS", subtitulo: "Hitos compartidos", screen: "moments-screen" },
     { id: "capsulas", icon: "⏳", titulo: "CÁPSULAS", subtitulo: "Mensajes en el tiempo", screen: "capsulas-screen" }
   ];
 
@@ -165,7 +199,7 @@ function renderHub() {
 }
 
 function openSection(id) {
-  const fns = { portales: renderPortales, calendario: renderCalendario, eventos: renderEventos, moments: renderMoments, capsulas: renderCapsulas };
+  const fns = { portales: renderPortales, calendario: renderCalendario, eventos: renderEventos, capsulas: renderCapsulas };
   fns[id]?.();
 }
 
@@ -325,19 +359,39 @@ async function renderEventos() {
   const user = getEventosUser();
   const items = [...base, ...user].sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
 
-  list.innerHTML = items.map((item) => {
-    const isUser = !!item.id;
-    return `
-    <div class="content-item event-item ${isUser ? "user-added" : ""}">
-      <span class="item-fecha">${formatFechaCompleta(item.fecha)}</span>
-      <div class="item-body">
-        <h4>${item.titulo}</h4>
-        <p>${item.descripcion || ""}</p>
-        ${item.lugar ? `<span class="item-lugar">📍 ${item.lugar}</span>` : ""}
-        ${isUser ? `<button type="button" class="btn-delete" onclick="deleteEvento('${item.id}')" title="Eliminar">×</button>` : ""}
+  if (items.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <p class="empty-msg">No hay eventos registrados aún.</p>
+        <p class="empty-hint">Añade el primero usando el formulario de arriba.</p>
       </div>
-    </div>
-  `}).join("") || "<p class='empty-msg'>No hay eventos. Añade el primero arriba.</p>";
+    `;
+  } else {
+    list.innerHTML = items.map((item) => {
+      const isUser = !!item.id;
+      const fechaStr = formatFechaCompleta(item.fecha);
+      const fechaParts = fechaStr.split(" ");
+      const day = fechaParts[0] || "";
+      const month = fechaParts[1] || "";
+      const year = fechaParts[2] || "";
+      
+      return `
+      <div class="event-card ${isUser ? "user-added" : ""}">
+        <div class="event-date-badge">
+          <span class="date-day">${day}</span>
+          <span class="date-month">${month}</span>
+          ${year ? `<span class="date-year">${year}</span>` : ""}
+        </div>
+        <div class="event-content">
+          <h4 class="event-title">${item.titulo}</h4>
+          ${item.descripcion ? `<p class="event-description">${item.descripcion}</p>` : ""}
+          ${item.lugar ? `<div class="event-location">📍 ${item.lugar}</div>` : ""}
+        </div>
+        ${isUser ? `<button type="button" class="btn-delete-event" onclick="deleteEvento('${item.id}')" title="Eliminar">×</button>` : ""}
+      </div>
+    `}).join("");
+  }
   showScreen("eventos-screen");
 }
 
@@ -350,33 +404,30 @@ async function addEvento(e) {
     descripcion: f.descripcion.value.trim() || undefined,
     lugar: f.lugar.value.trim() || undefined
   };
+  
+  if (!item.titulo || !item.fecha) {
+    return;
+  }
+  
   await addEventoItem(item);
   f.reset();
+  
+  // Feedback visual
+  const btn = f.querySelector('.btn-add-full');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '✓ AÑADIDO';
+  btn.style.background = 'rgba(0, 243, 255, 0.15)';
+  setTimeout(() => {
+    btn.innerHTML = originalText;
+    btn.style.background = '';
+  }, 1500);
+  
   renderEventos();
 }
 
 async function deleteEvento(id) {
   await deleteEventoApi(id);
   renderEventos();
-}
-
-function renderMoments() {
-  const list = document.getElementById("moments-list");
-  if (!list || !config) return;
-
-  const items = config.moments || [];
-
-  list.innerHTML = items.map((item, i) => `
-    <div class="content-item moment-item">
-      <span class="moment-num">${String(i + 1).padStart(2, "0")}</span>
-      <div class="item-body">
-        <h4>${item.titulo}</h4>
-        <p>${item.descripcion || ""}</p>
-        ${item.fecha ? `<span class="item-fecha">${item.fecha}</span>` : ""}
-      </div>
-    </div>
-  `).join("") || "<p class='empty-msg'>No hay moments aún.</p>";
-  showScreen("moments-screen");
 }
 
 function renderCapsulas() {
@@ -414,23 +465,18 @@ function renderSelector() {
   const container = document.getElementById("selector-container");
   if (!container || !config) return;
 
-  container.innerHTML = config.friendOrder.map(userId => {
-    const data = config.friends[userId];
-    if (!data) return "";
-
-    const unlocked = isUnlocked(data.cumpleanos);
-    return `
-      <div class="profile-card${unlocked ? "" : " locked"}" ${unlocked ? `onclick="launchPortal('${userId}')"` : ""}>
-        <div class="img-wrapper">
-          <img src="${data.avatar}" alt="${data.nombre}">
-          ${!unlocked ? '<div class="lock-overlay">🔒</div>' : ""}
-        </div>
-        <p class="name">${userId.toUpperCase()}</p>
-        ${!unlocked ? '<span class="badge">ACCESO DENEGADO</span>' : ""}
-        ${unlocked && (data.memorias || []).length > 0 ? '<span class="archivo-badge">📁</span>' : ""}
+  const visible = getVisiblePortalUsers();
+  container.innerHTML = visible.map(({ userId, data, unlocked }) => `
+    <div class="profile-card${unlocked ? "" : " locked"}" ${unlocked ? `onclick="launchPortal('${userId}')"` : ""}>
+      <div class="img-wrapper">
+        <img src="${data.avatar || ''}" alt="${data.nombre || userId}">
+        ${!unlocked ? '<div class="lock-overlay">🔒</div>' : ""}
       </div>
-    `;
-  }).join("");
+      <p class="name">${userId.toUpperCase()}</p>
+      ${!unlocked ? '<span class="badge">ACCESO DENEGADO</span>' : ""}
+      ${unlocked && (data.memorias || []).length > 0 ? '<span class="archivo-badge">📁</span>' : ""}
+    </div>
+  `).join("");
   showScreen("selector-screen");
 }
 
@@ -452,16 +498,17 @@ function launchPortal(userId) {
 function startLoadingSequence(data) {
   const output = document.getElementById("terminal-output");
   const fill = document.getElementById("progress-fill");
-  output.innerHTML = "";
+  if (output) output.innerHTML = "";
+  if (fill) fill.style.width = "0%";
   let i = 0;
 
   const interval = setInterval(() => {
-    if (i < config.terminalStrings.length) {
+    if (i < config.terminalStrings.length && output) {
       const p = document.createElement("p");
       p.textContent = config.terminalStrings[i];
       p.style.marginBottom = "5px";
       output.appendChild(p);
-      fill.style.width = `${((i + 1) / config.terminalStrings.length) * 100}%`;
+      if (fill) fill.style.width = `${((i + 1) / config.terminalStrings.length) * 100}%`;
       i++;
     } else {
       clearInterval(interval);
@@ -471,31 +518,40 @@ function startLoadingSequence(data) {
 }
 
 function transitionToPortal(data) {
-  showScreen("loading-screen");
-  setTimeout(() => {
-    showScreen("portal-screen");
-    document.getElementById("friend-avatar").src = data.avatar;
-    document.getElementById("data-name").textContent = data.nombre;
+  // Limpiar terminal output al volver
+  const terminalOutput = document.getElementById("terminal-output");
+  if (terminalOutput) terminalOutput.innerHTML = "";
+  const progressFill = document.getElementById("progress-fill");
+  if (progressFill) progressFill.style.width = "0%";
+  
+  showScreen("portal-screen");
+  document.getElementById("friend-avatar").src = data.avatar;
+  document.getElementById("data-name").textContent = data.nombre;
 
-    document.getElementById("access-btn").onclick = () => showCapsule(data);
-    document.getElementById("archivo-btn").onclick = () => showMemorias(currentFriendId);
-  }, 400);
+  document.getElementById("access-btn").onclick = () => showCapsule(data);
+  document.getElementById("archivo-btn").onclick = () => showMemorias(currentFriendId);
 }
 
 function showCapsule(data) {
   showScreen("capsule-screen");
-  document.getElementById("personal-message").textContent = data.msj;
+  const messageEl = document.getElementById("personal-message");
+  if (messageEl) messageEl.textContent = data.msj || "";
 
   const grid = document.getElementById("photo-grid");
-  grid.innerHTML = "";
-  (data.fotos || []).forEach(src => {
-    const img = document.createElement("img");
-    img.src = src;
-    img.onerror = () => (img.style.display = "none");
-    grid.appendChild(img);
-  });
+  if (grid) {
+    grid.innerHTML = "";
+    (data.fotos || []).forEach(src => {
+      const img = document.createElement("img");
+      img.src = src;
+      img.onerror = () => (img.style.display = "none");
+      grid.appendChild(img);
+    });
+  }
 
-  document.getElementById("capsule-back-btn").onclick = () => transitionToPortal(data);
+  const backBtn = document.getElementById("capsule-back-btn");
+  if (backBtn) {
+    backBtn.onclick = () => transitionToPortal(data);
+  }
 }
 
 // --- Archivo de memorias por persona ---
@@ -537,15 +593,116 @@ function showMemoriasBack() {
   document.getElementById("archivo-btn").onclick = () => showMemorias(currentFriendId);
 }
 
+// --- Auth ---
+const fetchOpts = { credentials: "include" };
+
+async function checkAuth() {
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/me`, fetchOpts);
+    if (res.ok) {
+      const data = await res.json();
+      currentUser = { userId: data.userId, nombre: data.nombre, avatar: data.avatar };
+      return true;
+    }
+  } catch {}
+  currentUser = null;
+  return false;
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  const form = e.target;
+  const errEl = document.getElementById("login-error");
+  errEl.textContent = "";
+  errEl.classList.add("hidden");
+  const username = form.username.value;
+  const password = form.password.value;
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      ...fetchOpts,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.ok) {
+      currentUser = { userId: data.userId, nombre: data.nombre, avatar: data.avatar };
+      form.reset();
+      showApp();
+    } else {
+      errEl.textContent = data.error || "Error al iniciar sesión";
+      errEl.classList.remove("hidden");
+    }
+  } catch (err) {
+    errEl.textContent = "No hay conexión con el servidor. ¿Está ejecutándose?";
+    errEl.classList.remove("hidden");
+  }
+}
+
+async function doLogout() {
+  try {
+    await fetch(`${API_BASE}/api/auth/logout`, { ...fetchOpts, method: "POST" });
+  } catch {}
+  currentUser = null;
+  showLogin();
+}
+
+function showLogin() {
+  populateLoginUsers();
+  showScreen("login-screen");
+}
+
+function continueAsGuest() {
+  currentUser = null;
+  showApp();
+}
+
+function populateLoginUsers() {
+  const sel = document.getElementById("login-username");
+  if (!sel || !config) return;
+  const users = config.friendOrder || Object.keys(config.friends || {});
+  sel.innerHTML = '<option value="">Selecciona quién eres</option>' +
+    users.map(id => {
+      const d = config.friends?.[id];
+      const name = d?.nombre || id;
+      return `<option value="${id}">${name}</option>`;
+    }).join("");
+}
+
+function showApp() {
+  renderHub();
+  renderSelector();
+  updateHubUser();
+  showScreen("hub-screen");
+}
+
+function updateHubUser() {
+  const wrap = document.getElementById("hub-user");
+  const img = document.getElementById("hub-avatar");
+  const name = document.getElementById("hub-name");
+  if (!wrap || !img || !name) return;
+  if (currentUser) {
+    wrap.classList.remove("hidden");
+    img.src = currentUser.avatar || "";
+    img.alt = currentUser.nombre;
+    name.textContent = currentUser.nombre;
+  } else {
+    wrap.classList.add("hidden");
+  }
+}
+
 // --- Init ---
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     const res = await fetch("data/friends.json");
     if (!res.ok) throw new Error(res.statusText);
     config = await res.json();
-    renderHub();
-    renderSelector();
-    showScreen("hub-screen");
+    const loggedIn = await checkAuth();
+    if (loggedIn) {
+      showApp();
+    } else {
+      showLogin();
+    }
   } catch (err) {
     console.error("No se pudo cargar data/friends.json:", err);
     const hub = document.getElementById("hub-screen");

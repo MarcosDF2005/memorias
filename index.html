@@ -2,7 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Memoria Digital | Protocolo de Recuperación</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -12,13 +15,41 @@
 <div class="scanline"></div>
 
 <main id="app">
+  <!-- Login -->
+  <section id="login-screen" class="screen">
+    <div class="cyber-card login-card">
+      <h2 class="title-glow">MEMORIA DIGITAL</h2>
+      <p class="subtitle">Inicia sesión para acceder</p>
+      <form id="login-form" class="login-form" onsubmit="doLogin(event)">
+        <div class="form-row">
+          <label class="form-label">Usuario</label>
+          <select name="username" class="form-input" id="login-username" required>
+            <option value="">Selecciona quién eres</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Contraseña</label>
+          <input type="password" name="password" class="form-input" placeholder="Tu contraseña" required>
+        </div>
+        <p id="login-error" class="login-error hidden"></p>
+        <button type="submit" class="sci-fi-btn btn-login">ENTRAR</button>
+      </form>
+      <p class="login-hint">Primera vez: <code>npm run setup-users</code> (contraseña: memoria)</p>
+      <button type="button" class="sci-fi-btn secondary btn-guest" onclick="continueAsGuest()">Continuar sin login</button>
+    </div>
+  </section>
+
   <!-- Hub principal -->
-  <section id="hub-screen" class="screen">
+  <section id="hub-screen" class="screen hidden">
     <div class="cyber-card hub-card">
-      <header class="card-header">
+      <header class="card-header hub-header">
+        <div class="hub-user" id="hub-user">
+          <img id="hub-avatar" class="hub-avatar" src="" alt="">
+          <span id="hub-name" class="hub-name"></span>
+          <button type="button" class="sci-fi-btn btn-logout" onclick="doLogout()">SALIR</button>
+        </div>
         <h2 class="title-glow">MEMORIA DIGITAL</h2>
         <p class="subtitle">SISTEMA DE RECUPERACIÓN · ESTADO: EN LÍNEA</p>
-        <button class="sci-fi-btn back-btn" onclick="renderSelector(); showScreen('selector-screen')">← VOLVER</button>
       </header>
       <nav class="hub-nav" id="hub-nav">
         <!-- Secciones generadas por JS -->
@@ -100,7 +131,7 @@
           <input type="hidden" name="fecha">
           <select name="tipo">
             <option value="cumpleaños">Cumpleaños</option>
-            <option value="aniversario">Aniversario</option>
+            <option value="vacaciones">Vacaciones</option>
             <option value="evento">Evento</option>
             <option value="examen">Examen</option>
             <option value="otro">Otro</option>
@@ -119,32 +150,60 @@
 
   <!-- Eventos del grupo -->
   <section id="eventos-screen" class="screen hidden">
-    <div class="cyber-card wide-card">
+    <div class="cyber-card wide-card eventos-card">
       <header class="card-header">
         <h2 class="title-glow">EVENTOS DEL GRUPO</h2>
-        <p class="subtitle">Aniversarios, viajes, salidas · Añade los tuyos</p>
+        <p class="subtitle">Aniversarios, viajes, salidas importantes</p>
         <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
       </header>
-      <form id="eventos-form" class="add-form" onsubmit="addEvento(event)">
-        <input type="date" name="fecha" required>
-        <input type="text" name="titulo" placeholder="Título" required>
-        <input type="text" name="descripcion" placeholder="Descripción (opcional)">
-        <input type="text" name="lugar" placeholder="Lugar (opcional)">
-        <button type="submit" class="sci-fi-btn btn-add">+ AÑADIR</button>
-      </form>
-      <div id="eventos-list" class="content-list"></div>
-    </div>
-  </section>
-
-  <!-- Moments (hitos) -->
-  <section id="moments-screen" class="screen hidden">
-    <div class="cyber-card wide-card">
-      <header class="card-header">
-        <h2 class="title-glow">MOMENTS</h2>
-        <p class="subtitle">Pequeños hitos que definen nuestra historia</p>
-        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
-      </header>
-      <div id="moments-list" class="content-list timeline"></div>
+      
+      <div class="form-section">
+        <h3 class="form-title">➕ Añadir nuevo evento</h3>
+        <form id="eventos-form" class="eventos-form" onsubmit="addEvento(event)">
+          <div class="form-row">
+            <label class="form-label">
+              <span class="label-icon">📅</span>
+              <span class="label-text">Fecha</span>
+            </label>
+            <input type="date" name="fecha" class="form-input" required>
+          </div>
+          
+          <div class="form-row">
+            <label class="form-label">
+              <span class="label-icon">📌</span>
+              <span class="label-text">Título del evento</span>
+            </label>
+            <input type="text" name="titulo" class="form-input" placeholder="Ej: Viaje a la playa" required>
+          </div>
+          
+          <div class="form-row">
+            <label class="form-label">
+              <span class="label-icon">📝</span>
+              <span class="label-text">Descripción</span>
+              <span class="label-optional">(opcional)</span>
+            </label>
+            <textarea name="descripcion" class="form-input form-textarea" placeholder="Detalles del evento..."></textarea>
+          </div>
+          
+          <div class="form-row">
+            <label class="form-label">
+              <span class="label-icon">📍</span>
+              <span class="label-text">Lugar</span>
+              <span class="label-optional">(opcional)</span>
+            </label>
+            <input type="text" name="lugar" class="form-input" placeholder="Ej: Madrid, La China...">
+          </div>
+          
+          <button type="submit" class="sci-fi-btn btn-add-full">
+            <span>+</span> AÑADIR EVENTO
+          </button>
+        </form>
+      </div>
+      
+      <div class="events-section">
+        <h3 class="section-title">📋 Eventos registrados</h3>
+        <div id="eventos-list" class="content-list eventos-list"></div>
+      </div>
     </div>
   </section>
 

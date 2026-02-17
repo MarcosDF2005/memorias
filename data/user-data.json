@@ -1,0 +1,34 @@
+{
+  "users": {
+    "Andrea": {
+      "passwordHash": "$2a$10$pAIi8CGxOrwNNcRr8g1r8OvOSJ3v1ajvgbaeaXw7RQo4BCS6IY5Kq"
+    },
+    "Sara": {
+      "passwordHash": "$2a$10$qGVFWn1./tHzsQQem3uprO6E9taym4HFq7us/hLpAvK9gK2bHzI4e"
+    },
+    "Mario": {
+      "passwordHash": "$2a$10$G/cOtrOl6GpWDgRZ7xhY4OKD9Jmrtou5YZmZYMuWyjczXcfEbcR6e"
+    },
+    "Sara Chacon": {
+      "passwordHash": "$2a$10$uvvgZMvxzpaOCaReLQxxoOrmZqUs5C.ksDgMp6PYKMzMCgTnDNT9."
+    },
+    "Nuno": {
+      "passwordHash": "$2a$10$qI074RnCSVvd7G581jfDtuHtCPnDG9pGxjTSE9E/RfWjrX5fhrGkG"
+    },
+    "Lucia": {
+      "passwordHash": "$2a$10$0Ye/5CiF3SSkaBqC4n1sKuU0mRTkdkm8QhpWn2neg5QhitHVck2fO"
+    },
+    "Jimena": {
+      "passwordHash": "$2a$10$XEE9gMwaLpUfzyExYxeSjOVbKk7qTSI5T0HPzXc6uVdyV7HdSxhEy"
+    },
+    "Eva": {
+      "passwordHash": "$2a$10$Tg/cRyUHvElrN2L552qLEepbI3nPKK0EX77fQjl2Uze6vrRz9LZW."
+    },
+    "Sara Chimeno": {
+      "passwordHash": "$2a$10$IQQUEWu0/P9mnKwzjNDt.eRkoUbT1kvxgjY9gHie2dQHMysaeK3Km"
+    },
+    "Aaron": {
+      "passwordHash": "$2a$10$a4iHbCw11c5D74Kdm8EY1u7sbVSKUZCyl8MKMfMqpn1jPmzCrIgsC"
+    }
+  }
+}

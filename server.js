@@ -1,13 +1,32 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const bcrypt = require("bcryptjs");
+const session = require("express-session");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "data", "user-data.json");
+const FRIENDS_FILE = path.join(__dirname, "data", "friends.json");
 
 app.use(express.json());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "memoria-digital-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === "production", maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 días
+  })
+);
 app.use(express.static(__dirname));
+
+function readFriends() {
+  try {
+    return JSON.parse(fs.readFileSync(FRIENDS_FILE, "utf8"));
+  } catch {
+    return { friends: {} };
+  }
+}
 
 function readUserData() {
   try {
@@ -81,6 +100,51 @@ app.delete("/api/eventos/:id", (req, res) => {
   res.status(204).send();
 });
 
-app.listen(PORT, () => {
+// --- Auth ---
+app.get("/api/auth/me", (req, res) => {
+  if (!req.session?.userId) return res.status(401).json({ ok: false });
+  const friends = readFriends();
+  const data = friends.friends?.[req.session.userId];
+  if (!data) return res.status(401).json({ ok: false });
+  res.json({
+    ok: true,
+    userId: req.session.userId,
+    nombre: data.nombre || req.session.userId,
+    avatar: data.avatar || "",
+  });
+});
+
+app.post("/api/auth/login", (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ ok: false, error: "Faltan usuario o contraseña" });
+  }
+  const data = readUserData();
+  const users = data.users || {};
+  const user = users[username];
+  if (!user?.passwordHash) {
+    return res.status(401).json({ ok: false, error: "Usuario no encontrado" });
+  }
+  if (!bcrypt.compareSync(password, user.passwordHash)) {
+    return res.status(401).json({ ok: false, error: "Contraseña incorrecta" });
+  }
+  req.session.userId = username;
+  const friends = readFriends();
+  const friendData = friends.friends?.[username];
+  res.json({
+    ok: true,
+    userId: username,
+    nombre: friendData?.nombre || username,
+    avatar: friendData?.avatar || "",
+  });
+});
+
+app.post("/api/auth/logout", (req, res) => {
+  req.session.destroy();
+  res.json({ ok: true });
+});
+
+const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
+app.listen(PORT, HOST, () => {
   console.log(`Memoria Digital → http://localhost:${PORT}`);
 });
