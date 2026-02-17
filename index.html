@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Memoria Digital | Protocolo de Recuperación</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="grid-overlay"></div>
+<div class="scanline"></div>
+
+<main id="app">
+  <!-- Hub principal -->
+  <section id="hub-screen" class="screen">
+    <div class="cyber-card hub-card">
+      <header class="card-header">
+        <h2 class="title-glow">MEMORIA DIGITAL</h2>
+        <p class="subtitle">SISTEMA DE RECUPERACIÓN · ESTADO: EN LÍNEA</p>
+        <button class="sci-fi-btn back-btn" onclick="renderSelector(); showScreen('selector-screen')">← VOLVER</button>
+      </header>
+      <nav class="hub-nav" id="hub-nav">
+        <!-- Secciones generadas por JS -->
+      </nav>
+    </div>
+  </section>
+
+  <section id="selector-screen" class="screen hidden">
+    <div class="cyber-card">
+      <header class="card-header">
+        <h2 class="title-glow">SISTEMA DE MEMORIA</h2>
+        <p class="subtitle">ESTADO: EN LÍNEA</p>
+        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+      </header>
+      <div class="selector-container" id="selector-container"></div>
+    </div>
+  </section>
+
+  <section id="loading-screen" class="screen hidden">
+    <div class="cyber-card small-card">
+      <div id="terminal-output" class="terminal-text"></div>
+      <div class="progress-container">
+        <div id="progress-fill"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="portal-screen" class="screen hidden">
+    <div class="cyber-card">
+      <button class="sci-fi-btn back-btn" onclick="goToSelector()">← VOLVER</button>
+      <div class="hud-frame">
+        <img id="friend-avatar" src="" alt="Avatar">
+      </div>
+      <h1 id="data-name">---</h1>
+      <div class="portal-buttons">
+        <button id="access-btn" class="sci-fi-btn">RECONSTRUIR NÚCLEO</button>
+        <button id="archivo-btn" class="sci-fi-btn secondary">ABRIR ARCHIVO</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="capsule-screen" class="screen hidden">
+    <div class="cyber-card wide-card">
+      <div class="message-header">MENSAJE ENCRIPTADO REPRODUCIENDO...</div>
+      <p id="personal-message"></p>
+      <div class="photo-grid" id="photo-grid"></div>
+      <div class="btn-footer">
+        <button id="capsule-back-btn" class="sci-fi-btn">← VOLVER</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calendario compartido -->
+  <section id="calendar-screen" class="screen hidden">
+    <div class="cyber-card wide-card calendar-card">
+      <header class="card-header calendar-header">
+        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+        <h2 class="title-glow">CALENDARIO COMPARTIDO</h2>
+        <p class="subtitle">Pulsa en un día para añadir</p>
+        <div class="calendar-nav">
+          <button type="button" class="calendar-arrow" onclick="changeCalendarMonth(-1)">‹</button>
+          <span id="calendar-month-label"></span>
+          <button type="button" class="calendar-arrow" onclick="changeCalendarMonth(1)">›</button>
+        </div>
+      </header>
+      <div class="calendar-grid">
+        <div class="calendar-weekdays">
+          <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+        </div>
+        <div id="calendar-days" class="calendar-days"></div>
+      </div>
+    </div>
+
+    <!-- Modal para añadir en un día -->
+    <div id="calendar-modal" class="calendar-modal hidden" onclick="if(event.target===this)closeCalendarModal()">
+      <div class="calendar-modal-content" onclick="event.stopPropagation()">
+        <h3 id="calendar-modal-title">Añadir para el <span></span></h3>
+        <form id="calendar-day-form" onsubmit="addCalendarioFromDay(event)">
+          <input type="hidden" name="fecha">
+          <select name="tipo">
+            <option value="cumpleaños">Cumpleaños</option>
+            <option value="aniversario">Aniversario</option>
+            <option value="evento">Evento</option>
+            <option value="examen">Examen</option>
+            <option value="otro">Otro</option>
+          </select>
+          <input type="text" name="titulo" placeholder="Título" required>
+          <input type="text" name="descripcion" placeholder="Descripción (opcional)">
+          <div class="modal-actions">
+            <button type="button" class="sci-fi-btn secondary" onclick="closeCalendarModal()">Cerrar</button>
+            <button type="submit" class="sci-fi-btn btn-add">AÑADIR</button>
+          </div>
+        </form>
+        <div id="calendar-day-entries" class="day-entries"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Eventos del grupo -->
+  <section id="eventos-screen" class="screen hidden">
+    <div class="cyber-card wide-card">
+      <header class="card-header">
+        <h2 class="title-glow">EVENTOS DEL GRUPO</h2>
+        <p class="subtitle">Aniversarios, viajes, salidas · Añade los tuyos</p>
+        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+      </header>
+      <form id="eventos-form" class="add-form" onsubmit="addEvento(event)">
+        <input type="date" name="fecha" required>
+        <input type="text" name="titulo" placeholder="Título" required>
+        <input type="text" name="descripcion" placeholder="Descripción (opcional)">
+        <input type="text" name="lugar" placeholder="Lugar (opcional)">
+        <button type="submit" class="sci-fi-btn btn-add">+ AÑADIR</button>
+      </form>
+      <div id="eventos-list" class="content-list"></div>
+    </div>
+  </section>
+
+  <!-- Moments (hitos) -->
+  <section id="moments-screen" class="screen hidden">
+    <div class="cyber-card wide-card">
+      <header class="card-header">
+        <h2 class="title-glow">MOMENTS</h2>
+        <p class="subtitle">Pequeños hitos que definen nuestra historia</p>
+        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+      </header>
+      <div id="moments-list" class="content-list timeline"></div>
+    </div>
+  </section>
+
+  <!-- Cápsulas del tiempo -->
+  <section id="capsulas-screen" class="screen hidden">
+    <div class="cyber-card wide-card">
+      <header class="card-header">
+        <h2 class="title-glow">CÁPSULAS DEL TIEMPO</h2>
+        <p class="subtitle">Mensajes que se abren en fechas concretas</p>
+        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+      </header>
+      <div id="capsulas-list" class="content-list"></div>
+    </div>
+  </section>
+
+  <!-- Archivo/Memorias de una persona -->
+  <section id="memorias-screen" class="screen hidden">
+    <div class="cyber-card wide-card">
+      <header class="card-header">
+        <h2 id="memorias-title" class="title-glow">ARCHIVO DE MEMORIAS</h2>
+        <p id="memorias-subtitle" class="subtitle"></p>
+        <button class="sci-fi-btn back-btn" onclick="showMemoriasBack()">← VOLVER</button>
+      </header>
+      <div id="memorias-list" class="content-list"></div>
+    </div>
+  </section>
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>

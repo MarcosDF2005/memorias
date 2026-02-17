@@ -1,0 +1,69 @@
+{
+  "friendOrder": ["Andrea", "Sara", "Mario"],
+  "terminalStrings": [
+    "> Verificando si hay mesa libre en La China...",
+    "> Analizando tasa de alcohol en sangre...",
+    "> Comprobando si Mario ya ha llegado...",
+    "> ¡Portal de felicitación listo!"
+  ],
+  "friends": {
+    "Andrea": {
+      "nombre": "Andrea",
+      "cumpleanos": "01-5",
+      "msj": "¡MUCHÍSIMAS FELICIDADES ANDREA! 🎉 Hoy es tu gran día. Aunque hoy no acabemos en La China dando el espectáculo, espero que lo celebres como si estuviéramos allí. Que tengas un día increíble, ¡te lo mereces todo!",
+      "avatar": "img/Andrea.jpg",
+      "color": "#7e637c",
+      "fotos": ["img/Andrea_1.jpeg", "img/Andrea_2.jpeg", "img/Andrea_3.jpeg", "img/Andrea_4.jpeg"],
+      "memorias": [
+        { "fecha": "2024-06", "titulo": "Noche en La China", "contenido": "La noche que no olvidaremos.", "fotos": ["img/Andrea_1.jpeg"] }
+      ]
+    },
+    "Sara": {
+      "nombre": "Sara Cambero",
+      "cumpleanos": "01-19",
+      "msj": "¡FELIZ CUMPLEAÑOS SARA! 👮‍♀️🎂 Aunque seas la futura oficial, hoy tienes permiso para saltarte todas las normas. Que este año sea de ley y lleno de celebraciones.",
+      "avatar": "img/Sara.jpg",
+      "color": "#00f3ff",
+      "fotos": ["img/Sara_1.jpeg", "img/Sara_2.jpeg", "img/Sara_3.jpeg", "img/Sara_4.jpeg"],
+      "memorias": [
+        { "fecha": "2024-09", "titulo": "Comienzo de curso", "contenido": "Otro año más juntos.", "fotos": [] }
+      ]
+    },
+    "Mario": {
+      "nombre": "Mario",
+      "cumpleanos": "03-20",
+      "msj": "¡FELIZ CUMPLEAÑOS MARIO! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
+      "avatar": "img/Mario.jpg",
+      "color": "#ffaa00",
+      "fotos": ["img/Mario_1.jpeg", "img/Mario_2.jpeg", "img/Mario_3.jpeg", "img/Mario_4.jpeg"],
+      "memorias": []
+    }
+  },
+  "calendario": [
+    { "fecha": "01-5", "tipo": "cumpleaños", "titulo": "Cumpleaños de Andrea", "persona": "Andrea" },
+    { "fecha": "01-19", "tipo": "cumpleaños", "titulo": "Cumpleaños de Sara", "persona": "Sara" },
+    { "fecha": "03-20", "tipo": "cumpleaños", "titulo": "Cumpleaños de Mario", "persona": "Mario" }
+  ],
+  "eventos": [
+
+  ],
+  "moments": [
+
+  ],
+  "capsulasTiempo": [
+    {
+      "fechaApertura": "12-31",
+      "titulo": "Cápsula Fin de Año 2024",
+      "mensajes": [
+        
+      ]
+    },
+    {
+      "fechaApertura": "06-15",
+      "titulo": "Cápsula Aniversario del Grupo",
+      "mensajes": [
+      
+      ]
+    }
+  ]
+}
