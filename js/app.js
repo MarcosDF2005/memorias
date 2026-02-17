@@ -169,7 +169,8 @@ function showScreen(id) {
 }
 
 function goToHub() {
-  document.documentElement.style.setProperty("--accent", "#00f3ff");
+  const accent = localStorage.getItem("memoria_accent") || currentUser?.color || "#00f3ff";
+  document.documentElement.style.setProperty("--accent", accent);
   showScreen("hub-screen");
 }
 
@@ -600,8 +601,8 @@ async function checkAuth() {
   try {
     const res = await fetch(`${API_BASE}/api/auth/me`, fetchOpts);
     if (res.ok) {
-      const data = await res.json();
-      currentUser = { userId: data.userId, nombre: data.nombre, avatar: data.avatar };
+    const data = await res.json();
+    currentUser = { userId: data.userId, nombre: data.nombre, avatar: data.avatar, color: data.color || "#00f3ff" };
       return true;
     }
   } catch {}
@@ -626,7 +627,7 @@ async function doLogin(e) {
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.ok) {
-      currentUser = { userId: data.userId, nombre: data.nombre, avatar: data.avatar };
+      currentUser = { userId: data.userId, nombre: data.nombre, avatar: data.avatar, color: data.color || "#00f3ff" };
       form.reset();
       showApp();
     } else {
@@ -680,14 +681,152 @@ function updateHubUser() {
   const wrap = document.getElementById("hub-user");
   const img = document.getElementById("hub-avatar");
   const name = document.getElementById("hub-name");
+  const nextBday = document.getElementById("hub-next-bday");
   if (!wrap || !img || !name) return;
   if (currentUser) {
     wrap.classList.remove("hidden");
     img.src = currentUser.avatar || "";
     img.alt = currentUser.nombre;
     name.textContent = currentUser.nombre;
+    const accent = localStorage.getItem("memoria_accent") || currentUser.color || "#00f3ff";
+    document.documentElement.style.setProperty("--accent", accent);
+    const nb = getNextBirthdayText();
+    if (nextBday) nextBday.textContent = nb;
+    renderProfileMenuColors();
+    renderNotifications();
   } else {
     wrap.classList.add("hidden");
+  }
+}
+
+function daysUntilBirthday(month, day) {
+  const hoy = new Date();
+  const cumple = new Date(hoy.getFullYear(), month - 1, day);
+  cumple.setHours(0, 0, 0, 0);
+  hoy.setHours(0, 0, 0, 0);
+  if (cumple < hoy) cumple.setFullYear(cumple.getFullYear() + 1);
+  return Math.ceil((cumple - hoy) / (1000 * 60 * 60 * 24));
+}
+
+function getNextBirthdayText() {
+  if (!config) return "";
+  const withCumple = config.friendOrder
+    .map(id => ({ id, data: config.friends?.[id] }))
+    .filter(({ data }) => data?.cumpleanos && /^\d{1,2}-\d{1,2}$/.test(data.cumpleanos));
+  let next = null;
+  for (const { id, data } of withCumple) {
+    const [m, d] = data.cumpleanos.split("-").map(Number);
+    const days = daysUntilBirthday(m, d);
+    if (!next || days < next.days) next = { id, nombre: data.nombre || id, days };
+  }
+  if (!next) return "";
+  if (next.days === 0) return "¡Hoy es cumple!";
+  if (next.days === 1) return `Mañana: ${next.nombre}`;
+  return `Próximo: ${next.nombre} en ${next.days}d`;
+}
+
+function toggleProfileMenu() {
+  const menu = document.getElementById("hub-profile-menu");
+  const notif = document.getElementById("hub-notif-dropdown");
+  if (!menu) return;
+  menu.classList.toggle("hidden");
+  if (notif) notif.classList.add("hidden");
+}
+
+function toggleNotifications() {
+  const notif = document.getElementById("hub-notif-dropdown");
+  const menu = document.getElementById("hub-profile-menu");
+  if (!notif) return;
+  notif.classList.toggle("hidden");
+  if (menu) menu.classList.add("hidden");
+}
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#hub-user")) {
+    document.getElementById("hub-profile-menu")?.classList.add("hidden");
+    document.getElementById("hub-notif-dropdown")?.classList.add("hidden");
+  }
+});
+
+function goToMyPortal() {
+  if (!currentUser) return;
+  document.getElementById("hub-profile-menu")?.classList.add("hidden");
+  launchPortal(currentUser.userId);
+}
+
+function renderProfileMenuColors() {
+  const container = document.getElementById("menu-colors");
+  if (!container || !config) return;
+  const colors = [...new Set(config.friendOrder.map(id => config.friends?.[id]?.color).filter(Boolean))];
+  if (colors.length === 0) colors.push("#00f3ff", "#7e637c", "#ffaa00");
+  container.innerHTML = colors.map(c => `
+    <button type="button" class="color-swatch" style="background:${c}" onclick="setAccentColor('${c}')" title="${c}"></button>
+  `).join("");
+}
+
+function setAccentColor(color) {
+  document.documentElement.style.setProperty("--accent", color);
+  localStorage.setItem("memoria_accent", color);
+}
+
+function renderNotifications() {
+  const dropdown = document.getElementById("hub-notif-dropdown");
+  const badge = document.getElementById("notif-badge");
+  if (!dropdown || !config) return;
+  const items = [];
+  for (const id of config.friendOrder || []) {
+    const d = config.friends?.[id];
+    if (!d?.cumpleanos || !/^\d{1,2}-\d{1,2}$/.test(d.cumpleanos)) continue;
+    const [m, day] = d.cumpleanos.split("-").map(Number);
+    const days = daysUntilBirthday(m, day);
+    if (days <= 30) items.push({ nombre: d.nombre || id, days });
+  }
+  items.sort((a, b) => a.days - b.days);
+  dropdown.innerHTML = items.length ? items.slice(0, 5).map(x =>
+    `<div class="notif-item">${x.days === 0 ? "🎂 Hoy" : x.days === 1 ? "🎂 Mañana" : `📅 ${x.days}d`}: ${x.nombre}</div>`
+  ).join("") : "<div class='notif-item empty'>Nada próximo</div>";
+  if (badge) {
+    badge.textContent = items.length;
+    badge.classList.toggle("hidden", items.length === 0);
+  }
+}
+
+function openChangePassword() {
+  document.getElementById("hub-profile-menu")?.classList.add("hidden");
+  document.getElementById("change-password-modal")?.classList.remove("hidden");
+}
+
+function closeChangePassword() {
+  document.getElementById("change-password-modal")?.classList.add("hidden");
+}
+
+async function submitChangePassword(e) {
+  e.preventDefault();
+  const f = e.target;
+  const err = document.getElementById("change-pw-error");
+  err.textContent = "";
+  err.classList.add("hidden");
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/change-password`, {
+      ...fetchOpts,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        currentPassword: f.currentPassword.value,
+        newPassword: f.newPassword.value,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.ok) {
+      f.reset();
+      closeChangePassword();
+    } else {
+      err.textContent = data.error || "Error";
+      err.classList.remove("hidden");
+    }
+  } catch {
+    err.textContent = "Error de conexión";
+    err.classList.remove("hidden");
   }
 }
 

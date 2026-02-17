@@ -111,6 +111,7 @@ app.get("/api/auth/me", (req, res) => {
     userId: req.session.userId,
     nombre: data.nombre || req.session.userId,
     avatar: data.avatar || "",
+    color: data.color || "#00f3ff",
   });
 });
 
@@ -136,11 +137,30 @@ app.post("/api/auth/login", (req, res) => {
     userId: username,
     nombre: friendData?.nombre || username,
     avatar: friendData?.avatar || "",
+    color: friendData?.color || "#00f3ff",
   });
 });
 
 app.post("/api/auth/logout", (req, res) => {
   req.session.destroy();
+  res.json({ ok: true });
+});
+
+app.post("/api/auth/change-password", (req, res) => {
+  if (!req.session?.userId) return res.status(401).json({ ok: false, error: "No autorizado" });
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword || newPassword.length < 4) {
+    return res.status(400).json({ ok: false, error: "Contraseña nueva mínimo 4 caracteres" });
+  }
+  const data = readUserData();
+  const users = data.users || {};
+  const user = users[req.session.userId];
+  if (!user?.passwordHash || !bcrypt.compareSync(currentPassword, user.passwordHash)) {
+    return res.status(401).json({ ok: false, error: "Contraseña actual incorrecta" });
+  }
+  user.passwordHash = bcrypt.hashSync(newPassword, 10);
+  data.users = users;
+  writeUserData(data);
   res.json({ ok: true });
 });
 

@@ -34,20 +34,58 @@
         <p id="login-error" class="login-error hidden"></p>
         <button type="submit" class="sci-fi-btn btn-login">ENTRAR</button>
       </form>
-      <p class="login-hint">Primera vez: <code>npm run setup-users</code> (contraseña: memoria)</p>
       <button type="button" class="sci-fi-btn secondary btn-guest" onclick="continueAsGuest()">Continuar sin login</button>
     </div>
   </section>
 
   <!-- Hub principal -->
   <section id="hub-screen" class="screen hidden">
-    <div class="cyber-card hub-card">
-      <header class="card-header hub-header">
-        <div class="hub-user" id="hub-user">
+    <div class="hub-user" id="hub-user">
+      <span class="hub-status-dot" title="En línea"></span>
+      <div class="hub-user-trigger">
+        <div class="hub-user-main" onclick="toggleProfileMenu()">
           <img id="hub-avatar" class="hub-avatar" src="" alt="">
-          <span id="hub-name" class="hub-name"></span>
-          <button type="button" class="sci-fi-btn btn-logout" onclick="doLogout()">SALIR</button>
+          <div class="hub-user-info">
+            <span id="hub-name" class="hub-name"></span>
+            <span id="hub-next-bday" class="hub-next-bday"></span>
+          </div>
+          <span class="hub-chevron">▾</span>
         </div>
+        <div class="hub-profile-menu hidden" id="hub-profile-menu">
+          <button type="button" class="menu-item" onclick="goToMyPortal()">🎂 Mi portal</button>
+          <button type="button" class="menu-item" onclick="openChangePassword()">🔐 Cambiar contraseña</button>
+          <div class="menu-colors" id="menu-colors"></div>
+          <button type="button" class="menu-item menu-logout" onclick="doLogout()">SALIR</button>
+        </div>
+      </div>
+      <div class="hub-notif-trigger">
+        <div class="hub-notifications" id="hub-notifications" onclick="toggleNotifications()">
+          <span class="notif-icon">🔔</span>
+          <span class="notif-badge hidden" id="notif-badge">0</span>
+        </div>
+        <div class="hub-notif-dropdown hidden" id="hub-notif-dropdown"></div>
+      </div>
+    </div>
+    <!-- Modal cambiar contraseña -->
+    <div id="change-password-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeChangePassword()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <h3>Cambiar contraseña</h3>
+        <form onsubmit="submitChangePassword(event)">
+          <div class="form-row">
+            <label>Contraseña actual</label>
+            <input type="password" name="currentPassword" required>
+          </div>
+          <div class="form-row">
+            <label>Nueva contraseña</label>
+            <input type="password" name="newPassword" minlength="4" required>
+          </div>
+          <p id="change-pw-error" class="login-error hidden"></p>
+          <button type="submit" class="sci-fi-btn">GUARDAR</button>
+        </form>
+      </div>
+    </div>
+    <div class="cyber-card hub-card">
+      <header class="card-header">
         <h2 class="title-glow">MEMORIA DIGITAL</h2>
         <p class="subtitle">SISTEMA DE RECUPERACIÓN · ESTADO: EN LÍNEA</p>
       </header>

@@ -1,34 +1,42 @@
 {
   "users": {
     "Andrea": {
-      "passwordHash": "$2a$10$pAIi8CGxOrwNNcRr8g1r8OvOSJ3v1ajvgbaeaXw7RQo4BCS6IY5Kq"
+      "passwordHash": "$2a$10$Jh1rcKyarpQ5E3HRQW8bf.SVHpN0ClZSsYzWNMej0fcCmzjBtL1DW"
     },
     "Sara": {
-      "passwordHash": "$2a$10$qGVFWn1./tHzsQQem3uprO6E9taym4HFq7us/hLpAvK9gK2bHzI4e"
+      "passwordHash": "$2a$10$Onbe8eJTXMiT1pAp/6AEWu3aQGzduVtya4RQqJKUmRve0FNQjR9CS"
     },
     "Mario": {
-      "passwordHash": "$2a$10$G/cOtrOl6GpWDgRZ7xhY4OKD9Jmrtou5YZmZYMuWyjczXcfEbcR6e"
+      "passwordHash": "$2a$10$7J.dFk9InDzVvUzbQCSwiuBTjX.ZERI75UHRihT4.kJg5/9Ljr4dO"
     },
     "Sara Chacon": {
-      "passwordHash": "$2a$10$uvvgZMvxzpaOCaReLQxxoOrmZqUs5C.ksDgMp6PYKMzMCgTnDNT9."
+      "passwordHash": "$2a$10$eVhvDsQuaiyjo8yLObFN5.Yk3W7iHzEo54Sc9mQ6mgwUjOSr4P5mO"
     },
     "Nuno": {
-      "passwordHash": "$2a$10$qI074RnCSVvd7G581jfDtuHtCPnDG9pGxjTSE9E/RfWjrX5fhrGkG"
+      "passwordHash": "$2a$10$IuL..jKMw8Baw7sJ7AxerOfyc6IigpVx8XSfyjQOWwT6S9bUCbJCK"
     },
     "Lucia": {
-      "passwordHash": "$2a$10$0Ye/5CiF3SSkaBqC4n1sKuU0mRTkdkm8QhpWn2neg5QhitHVck2fO"
+      "passwordHash": "$2a$10$KqNZ8G4omweNVGNSlSI13eHNE5VWxKfpSDSrE6hFmJgszQYWyrwt6"
     },
     "Jimena": {
-      "passwordHash": "$2a$10$XEE9gMwaLpUfzyExYxeSjOVbKk7qTSI5T0HPzXc6uVdyV7HdSxhEy"
+      "passwordHash": "$2a$10$1lHV88Ru1pZvtr2GMpVUgOZFJlQ50yEW9NvzmnYiFnuYUtvEWnNvm"
     },
     "Eva": {
-      "passwordHash": "$2a$10$Tg/cRyUHvElrN2L552qLEepbI3nPKK0EX77fQjl2Uze6vrRz9LZW."
+      "passwordHash": "$2a$10$MlsUMjORihfhm1aP8fRpGeXobhEKptzUk3ezlgAVtG97bt/2EzXUS"
     },
     "Sara Chimeno": {
-      "passwordHash": "$2a$10$IQQUEWu0/P9mnKwzjNDt.eRkoUbT1kvxgjY9gHie2dQHMysaeK3Km"
+      "passwordHash": "$2a$10$KK0shIBH/IOitBHyLEp1uOBf5HlB6nTvMgnfRYjRYMqY670A37NLK"
     },
     "Aaron": {
-      "passwordHash": "$2a$10$a4iHbCw11c5D74Kdm8EY1u7sbVSKUZCyl8MKMfMqpn1jPmzCrIgsC"
+      "passwordHash": "$2a$10$L8lo1D97oDb6MHmhfNr1FuE1tQzupCAj4HKLSJ6fXsL7tvl4Dcu/G"
     }
-  }
+  },
+  "calendario": [
+    {
+      "id": "cal_1771335122750",
+      "fecha": "02-20",
+      "tipo": "vacaciones",
+      "titulo": "Viaje a Rota"
+    }
+  ]
 }
