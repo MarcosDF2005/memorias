@@ -1,42 +1,67 @@
 {
   "users": {
-    "Andrea": {
-      "passwordHash": "$2a$10$Jh1rcKyarpQ5E3HRQW8bf.SVHpN0ClZSsYzWNMej0fcCmzjBtL1DW"
+    "Marcos": {
+      "passwordHash": "$2a$10$NFdt1D/ltTPIyfTetY1Eve1wC85ncfdquzTtftZ7KQ4cYwqpLwdxe"
     },
-    "Sara": {
-      "passwordHash": "$2a$10$Onbe8eJTXMiT1pAp/6AEWu3aQGzduVtya4RQqJKUmRve0FNQjR9CS"
+    "Andrea": {
+      "passwordHash": "$2a$10$ZJfcmOsuWIF3YYDCBNYc0O6HM98tSWxU1UpFCgt8hCE0pOczTSrVW"
+    },
+    "Sara Cambero": {
+      "passwordHash": "$2a$10$1fKo5y5Qc6egePqkmUqxweemeR2FvWVc1bF7acnvJbNTfv8eh5Qmu"
     },
     "Mario": {
-      "passwordHash": "$2a$10$7J.dFk9InDzVvUzbQCSwiuBTjX.ZERI75UHRihT4.kJg5/9Ljr4dO"
+      "passwordHash": "$2a$10$/5fhLVwTgS6C0ySNH/Rn5OchekBXV2SQN4L5ne4WP.znEPVStmDzK"
     },
     "Sara Chacon": {
-      "passwordHash": "$2a$10$eVhvDsQuaiyjo8yLObFN5.Yk3W7iHzEo54Sc9mQ6mgwUjOSr4P5mO"
+      "passwordHash": "$2a$10$FZTS2rJV8c9HsEzzpk637u2p55q5lJddkfd530NOzgxV2kilc80Di"
     },
     "Nuno": {
-      "passwordHash": "$2a$10$IuL..jKMw8Baw7sJ7AxerOfyc6IigpVx8XSfyjQOWwT6S9bUCbJCK"
+      "passwordHash": "$2a$10$TmzpZbPytBtrFY7CdHEa0enSTQAUnqwaMG5h1AlM9nSEWzR3ryhGq"
     },
     "Lucia": {
-      "passwordHash": "$2a$10$KqNZ8G4omweNVGNSlSI13eHNE5VWxKfpSDSrE6hFmJgszQYWyrwt6"
+      "passwordHash": "$2a$10$B/vz38Lh.c3VmGA18YDI7.YP1nG3lnpt0o1z7XKW8l30bOCQT8YcG"
     },
     "Jimena": {
-      "passwordHash": "$2a$10$1lHV88Ru1pZvtr2GMpVUgOZFJlQ50yEW9NvzmnYiFnuYUtvEWnNvm"
+      "passwordHash": "$2a$10$TWGFezIWY3tZyjXSeW5twObS0B4j/.Owmbl5oVrRgrc16tPVuYOOe"
     },
     "Eva": {
-      "passwordHash": "$2a$10$MlsUMjORihfhm1aP8fRpGeXobhEKptzUk3ezlgAVtG97bt/2EzXUS"
+      "passwordHash": "$2a$10$bokZFYAeldwhHRgnnddisuJNzklAZJsiE2jSBvvaNINJvaDHICsPK"
     },
     "Sara Chimeno": {
-      "passwordHash": "$2a$10$KK0shIBH/IOitBHyLEp1uOBf5HlB6nTvMgnfRYjRYMqY670A37NLK"
+      "passwordHash": "$2a$10$SAZpSCEkLQoMgQDFJVGV4uX6Nf4MdTIcAE9Wcrpt3FVFC2EqY33i."
     },
     "Aaron": {
-      "passwordHash": "$2a$10$L8lo1D97oDb6MHmhfNr1FuE1tQzupCAj4HKLSJ6fXsL7tvl4Dcu/G"
+      "passwordHash": "$2a$10$056bY/gUeKPfMYj/A9GWb.mICAJSVMgNqiZ/SFzvoJ831qdg3P/j."
     }
   },
-  "calendario": [
+  "calendario": [],
+  "eventos": [
     {
-      "id": "cal_1771335122750",
-      "fecha": "02-20",
-      "tipo": "vacaciones",
-      "titulo": "Viaje a Rota"
+      "id": "evt_1771507644132",
+      "fecha": "2026-02-27",
+      "titulo": "Viaje a Rota",
+      "lugar": "Rota, Cadiz"
+    }
+  ],
+  "capsulasTiempo": [],
+  "notifications": [
+    {
+      "id": "notif_1771508354613",
+      "type": "calendario",
+      "title": "Mario",
+      "subtitle": "Sara Cambero añadió una fecha al calendario",
+      "createdBy": "Sara Cambero",
+      "screen": "calendar-screen",
+      "createdAt": "2026-02-19T13:39:14.613Z"
+    },
+    {
+      "id": "notif_1771508269914",
+      "type": "calendario",
+      "title": "hola",
+      "subtitle": "Sara Cambero añadió una fecha al calendario",
+      "createdBy": "Sara Cambero",
+      "screen": "calendar-screen",
+      "createdAt": "2026-02-19T13:37:49.914Z"
     }
   ]
 }

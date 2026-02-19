@@ -23,13 +23,11 @@
       <form id="login-form" class="login-form" onsubmit="doLogin(event)">
         <div class="form-row">
           <label class="form-label">Usuario</label>
-          <select name="username" class="form-input" id="login-username" required>
-            <option value="">Selecciona quién eres</option>
-          </select>
+          <input type="text" name="username" class="form-input" id="login-username" placeholder="Tu nombre (ej: Andrea, Mario...)" autocomplete="username" required>
         </div>
         <div class="form-row">
           <label class="form-label">Contraseña</label>
-          <input type="password" name="password" class="form-input" placeholder="Tu contraseña" required>
+          <input type="password" name="password" class="form-input" placeholder="Tu contraseña" autocomplete="current-password" required>
         </div>
         <p id="login-error" class="login-error hidden"></p>
         <button type="submit" class="sci-fi-btn btn-login">ENTRAR</button>
@@ -40,32 +38,39 @@
 
   <!-- Hub principal -->
   <section id="hub-screen" class="screen hidden">
-    <div class="hub-user" id="hub-user">
-      <span class="hub-status-dot" title="En línea"></span>
-      <div class="hub-user-trigger">
-        <div class="hub-user-main" onclick="toggleProfileMenu()">
-          <img id="hub-avatar" class="hub-avatar" src="" alt="">
-          <div class="hub-user-info">
-            <span id="hub-name" class="hub-name"></span>
-            <span id="hub-next-bday" class="hub-next-bday"></span>
+    <header class="hub-bar" id="hub-user" role="group" aria-label="Usuario y notificaciones">
+      <div class="hub-bar-left"></div>
+      <div class="hub-bar-center">
+        <div class="hub-user-trigger">
+          <button type="button" class="hub-user-main" onclick="toggleProfileMenu()" id="hub-profile-btn" aria-expanded="false" aria-haspopup="true" aria-controls="hub-profile-menu" aria-label="Perfil">
+            <span class="hub-status-dot" title="En línea" aria-hidden="true"></span>
+            <img id="hub-avatar" class="hub-avatar" src="" alt="" decoding="async" loading="eager">
+            <span id="hub-name" class="sr-only"></span>
+            <span id="hub-next-bday" class="sr-only"></span>
+          </button>
+          <div class="hub-profile-menu hidden" id="hub-profile-menu" role="menu" aria-labelledby="hub-profile-btn">
+            <div class="profile-summary" id="profile-summary"><!-- Rellenado por JS --></div>
+            <button type="button" class="menu-item" id="btn-mi-portal-bday" onclick="goToMyPortal()" role="menuitem">🎁 Mi portal de cumpleaños</button>
+            <div class="menu-section-label">Cuenta</div>
+            <button type="button" class="menu-item" onclick="openChangePassword()" role="menuitem">🔐 Cambiar contraseña</button>
+            <div class="menu-colors-wrap">
+              <span class="menu-colors-label">Tema</span>
+              <div class="menu-colors" id="menu-colors"></div>
+            </div>
+            <button type="button" class="menu-item menu-logout" onclick="doLogout()" role="menuitem">SALIR</button>
           </div>
-          <span class="hub-chevron">▾</span>
-        </div>
-        <div class="hub-profile-menu hidden" id="hub-profile-menu">
-          <button type="button" class="menu-item" onclick="goToMyPortal()">🎂 Mi portal</button>
-          <button type="button" class="menu-item" onclick="openChangePassword()">🔐 Cambiar contraseña</button>
-          <div class="menu-colors" id="menu-colors"></div>
-          <button type="button" class="menu-item menu-logout" onclick="doLogout()">SALIR</button>
         </div>
       </div>
-      <div class="hub-notif-trigger">
-        <div class="hub-notifications" id="hub-notifications" onclick="toggleNotifications()">
-          <span class="notif-icon">🔔</span>
-          <span class="notif-badge hidden" id="notif-badge">0</span>
+      <div class="hub-bar-right">
+        <div class="hub-notif-trigger">
+          <button type="button" class="hub-notifications" id="hub-notifications" onclick="toggleNotifications()" aria-expanded="false" aria-haspopup="true" aria-controls="hub-notif-dropdown" aria-label="Notificaciones">
+            <span class="notif-icon" aria-hidden="true">🔔</span>
+            <span class="notif-badge hidden" id="notif-badge" aria-live="polite">0</span>
+          </button>
+          <div class="hub-notif-dropdown hidden" id="hub-notif-dropdown" role="menu" aria-labelledby="hub-notifications"></div>
         </div>
-        <div class="hub-notif-dropdown hidden" id="hub-notif-dropdown"></div>
       </div>
-    </div>
+    </header>
     <!-- Modal cambiar contraseña -->
     <div id="change-password-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeChangePassword()">
       <div class="modal-content" onclick="event.stopPropagation()">
@@ -96,11 +101,11 @@
   </section>
 
   <section id="selector-screen" class="screen hidden">
-    <div class="cyber-card">
-      <header class="card-header">
+    <div class="cyber-card selector-card">
+      <header class="card-header selector-header">
         <h2 class="title-glow">SISTEMA DE MEMORIA</h2>
-        <p class="subtitle">ESTADO: EN LÍNEA</p>
-        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+        <p class="subtitle selector-status">Estado: en línea</p>
+        <button class="sci-fi-btn back-btn selector-back-btn" onclick="goToHub()">← VOLVER</button>
       </header>
       <div class="selector-container" id="selector-container"></div>
     </div>
@@ -119,7 +124,7 @@
     <div class="cyber-card">
       <button class="sci-fi-btn back-btn" onclick="goToSelector()">← VOLVER</button>
       <div class="hud-frame">
-        <img id="friend-avatar" src="" alt="Avatar">
+        <img id="friend-avatar" src="" alt="Avatar" decoding="async" loading="eager">
       </div>
       <h1 id="data-name">---</h1>
       <div class="portal-buttons">
@@ -144,9 +149,10 @@
   <section id="calendar-screen" class="screen hidden">
     <div class="cyber-card wide-card calendar-card">
       <header class="card-header calendar-header">
-        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+
         <h2 class="title-glow">CALENDARIO COMPARTIDO</h2>
         <p class="subtitle">Pulsa en un día para añadir</p>
+        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
         <div class="calendar-nav">
           <button type="button" class="calendar-arrow" onclick="changeCalendarMonth(-1)">‹</button>
           <span id="calendar-month-label"></span>
@@ -189,71 +195,146 @@
   <!-- Eventos del grupo -->
   <section id="eventos-screen" class="screen hidden">
     <div class="cyber-card wide-card eventos-card">
-      <header class="card-header">
+      <header class="card-header eventos-header">
         <h2 class="title-glow">EVENTOS DEL GRUPO</h2>
         <p class="subtitle">Aniversarios, viajes, salidas importantes</p>
-        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+        <button class="sci-fi-btn back-btn eventos-back-btn" onclick="closeEventoCreateModal(); goToHub()">← VOLVER</button>
+        <button class="sci-fi-btn btn-create-evento" onclick="openEventoCreateModal()">+ Crear evento</button>
       </header>
-      
-      <div class="form-section">
-        <h3 class="form-title">➕ Añadir nuevo evento</h3>
-        <form id="eventos-form" class="eventos-form" onsubmit="addEvento(event)">
-          <div class="form-row">
-            <label class="form-label">
-              <span class="label-icon">📅</span>
-              <span class="label-text">Fecha</span>
-            </label>
-            <input type="date" name="fecha" class="form-input" required>
-          </div>
-          
-          <div class="form-row">
-            <label class="form-label">
-              <span class="label-icon">📌</span>
-              <span class="label-text">Título del evento</span>
-            </label>
-            <input type="text" name="titulo" class="form-input" placeholder="Ej: Viaje a la playa" required>
-          </div>
-          
-          <div class="form-row">
-            <label class="form-label">
-              <span class="label-icon">📝</span>
-              <span class="label-text">Descripción</span>
-              <span class="label-optional">(opcional)</span>
-            </label>
-            <textarea name="descripcion" class="form-input form-textarea" placeholder="Detalles del evento..."></textarea>
-          </div>
-          
-          <div class="form-row">
-            <label class="form-label">
-              <span class="label-icon">📍</span>
-              <span class="label-text">Lugar</span>
-              <span class="label-optional">(opcional)</span>
-            </label>
-            <input type="text" name="lugar" class="form-input" placeholder="Ej: Madrid, La China...">
-          </div>
-          
-          <button type="submit" class="sci-fi-btn btn-add-full">
-            <span>+</span> AÑADIR EVENTO
-          </button>
-        </form>
-      </div>
-      
+
       <div class="events-section">
-        <h3 class="section-title">📋 Eventos registrados</h3>
         <div id="eventos-list" class="content-list eventos-list"></div>
+      </div>
+    </div>
+
+    <!-- Modal crear evento -->
+    <div id="evento-create-modal" class="evento-create-modal hidden" onclick="if(event.target===this)closeEventoCreateModal()">
+      <div class="evento-create-modal-content" onclick="event.stopPropagation()">
+        <h3 class="evento-modal-title">Crear nuevo evento</h3>
+        <form id="eventos-form" class="eventos-form-modern" onsubmit="addEvento(event)">
+          <div class="evento-form-field">
+            <label class="evento-label">
+              <span class="evento-label-icon">📅</span>
+              Fecha
+            </label>
+            <input type="date" name="fecha" class="evento-input" required>
+          </div>
+          <div class="evento-form-field">
+            <label class="evento-label">
+              <span class="evento-label-icon">📌</span>
+              Título del evento
+            </label>
+            <input type="text" name="titulo" class="evento-input" placeholder="Ej: Viaje a la playa" required>
+          </div>
+          <div class="evento-form-field">
+            <label class="evento-label">
+              <span class="evento-label-icon">📝</span>
+              Descripción
+              <span class="evento-label-optional">opcional</span>
+            </label>
+            <textarea name="descripcion" class="evento-input evento-textarea" placeholder="Detalles del evento..." rows="2"></textarea>
+          </div>
+          <div class="evento-form-field">
+            <label class="evento-label">
+              <span class="evento-label-icon">📍</span>
+              Lugar
+              <span class="evento-label-optional">opcional</span>
+            </label>
+            <input type="text" name="lugar" class="evento-input" placeholder="Ej: Madrid, La China...">
+          </div>
+          <div class="evento-modal-actions">
+            <button type="button" class="sci-fi-btn secondary" onclick="closeEventoCreateModal()">Cancelar</button>
+            <button type="submit" class="evento-submit-btn btn-add-evento">
+              <span class="evento-btn-icon">+</span>
+              Crear evento
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </section>
 
   <!-- Cápsulas del tiempo -->
   <section id="capsulas-screen" class="screen hidden">
-    <div class="cyber-card wide-card">
-      <header class="card-header">
+    <div class="cyber-card wide-card capsulas-card">
+      <header class="card-header capsulas-header">
         <h2 class="title-glow">CÁPSULAS DEL TIEMPO</h2>
         <p class="subtitle">Mensajes que se abren en fechas concretas</p>
-        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+        <button class="sci-fi-btn back-btn capsula-back-btn" onclick="closeCapsulaCreateModal(); goToHub()">← VOLVER</button>
+        <button class="sci-fi-btn btn-create-capsula" onclick="openCapsulaCreateModal()">+ Crear cápsula</button>
       </header>
-      <div id="capsulas-list" class="content-list"></div>
+
+      <div class="events-section">
+        <div id="capsulas-list" class="content-list"></div>
+      </div>
+    </div>
+
+    <!-- Modal crear cápsula -->
+    <div id="capsula-create-modal" class="capsula-create-modal hidden" onclick="if(event.target===this)closeCapsulaCreateModal()">
+      <div class="capsula-create-modal-content" onclick="event.stopPropagation()">
+        <h3 class="capsula-modal-title">Crear nueva cápsula</h3>
+        <form id="capsulas-form" class="capsulas-form-modern" onsubmit="addCapsula(event)">
+          <div class="capsula-form-field">
+            <label class="capsula-label">
+              <span class="capsula-label-icon">⏳</span>
+              Título
+            </label>
+            <input type="text" name="titulo" class="capsula-input" placeholder="Ej: Cumpleaños Mario" required>
+          </div>
+          <div class="capsula-form-field">
+            <label class="capsula-label">
+              <span class="capsula-label-icon">📅</span>
+              Fecha de apertura
+            </label>
+            <input type="date" name="fechaApertura" class="capsula-input" required>
+          </div>
+          <div class="capsula-form-field capsula-permitted-field">
+            <label class="capsula-label">
+              <span class="capsula-label-icon">👥</span>
+              Restringir acceso
+              <span class="capsula-label-optional">opcional</span>
+            </label>
+            <p class="capsula-form-hint">Si no seleccionas nadie, todos pueden verla y dejar mensaje.</p>
+            <div id="capsula-permitted-checkboxes" class="permitted-chips"></div>
+          </div>
+          <div class="capsula-modal-actions">
+            <button type="button" class="sci-fi-btn secondary" onclick="closeCapsulaCreateModal()">Cancelar</button>
+            <button type="submit" class="capsula-submit-btn btn-add-capsula">
+              <span class="capsula-btn-icon">+</span>
+              Crear cápsula
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Detalle de cápsula (mensajes) -->
+  <section id="capsula-detail-screen" class="screen hidden">
+    <div class="cyber-card wide-card">
+      <header class="card-header">
+        <h2 id="capsula-detail-title" class="title-glow">CÁPSULA</h2>
+        <p id="capsula-detail-fecha" class="subtitle"></p>
+        <button class="sci-fi-btn back-btn" onclick="showCapsulaDetailBack()">← VOLVER</button>
+      </header>
+      <div id="capsula-detail-access-msg" class="access-restricted-msg" style="display:none"></div>
+      <div class="capsula-detail-mensajes-wrap">
+        <h3 class="section-title">📬 Mensajes</h3>
+        <div id="capsula-detail-mensajes" class="capsula-mensajes capsula-detail-mensajes"></div>
+      </div>
+      <div id="capsula-detail-form-wrap" class="form-section capsula-detail-form">
+        <form id="capsula-detail-form" onsubmit="addMensajeCapsula(event)">
+          <input type="hidden" name="capId">
+          <div class="form-row">
+            <label class="form-label">
+              <span class="label-icon">✉️</span>
+              <span class="label-text">Tu mensaje</span>
+            </label>
+            <textarea name="msj" class="form-input form-textarea" placeholder="Escribe tu mensaje para esta cápsula..." required rows="3"></textarea>
+          </div>
+          <button type="submit" class="sci-fi-btn btn-add-full">Enviar mensaje</button>
+        </form>
+      </div>
     </div>
   </section>
 

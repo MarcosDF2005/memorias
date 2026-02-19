@@ -1,5 +1,5 @@
 {
-  "friendOrder": ["Andrea", "Sara", "Mario", "Sara Chacon", "Nuno", "Lucia", "Jimena", "Eva", "Sara Chimeno", "Aaron"],
+  "friendOrder": ["Marcos", "Andrea", "Sara Cambero", "Mario", "Sara Chacon", "Nuno", "Lucia", "Jimena", "Eva", "Sara Chimeno", "Aaron"],
   "terminalStrings": [
     "> Verificando si hay mesa libre en La China...",
     "> Analizando tasa de alcohol en sangre...",
@@ -7,6 +7,15 @@
     "> ¡Portal de felicitación listo!"
   ],
   "friends": {
+    "Marcos": {
+      "nombre": "Marcos",
+      "cumpleanos": "",
+      "role": "admin",
+      "avatar": "img/Marcos.png",
+      "color": "#22c55e",
+      "fotos": [],
+      "memorias": []
+    },
     "Andrea": {
       "nombre": "Andrea",
       "cumpleanos": "01-5",
@@ -18,7 +27,7 @@
         
       ]
     },
-    "Sara": {
+    "Sara Cambero": {
       "nombre": "Sara Cambero",
       "cumpleanos": "01-19",
       "msj": "¡FELIZ CUMPLEAÑOS SARA! 👮‍♀️🎂 Aunque seas la futura oficial, hoy tienes permiso para saltarte todas las normas. Que este año sea de ley y lleno de celebraciones.",
@@ -42,9 +51,9 @@
     },
     "Sara Chacon": {
       "nombre": "Sara Chacon",
-      "cumpleanos": "",
+      "cumpleanos": "05-10",
       "msj": "¡FELIZ CUMPLEAÑOS Sara! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
-      "avatar": "img/Sara_Chacon.jpg",
+      "avatar": "img/Sara_Chacon.png",
       "color": "#00f3ff",
       "fotos": ["img/Sara_Chacon_1.jpeg", "img/Sara_Chacon_2.jpeg", "img/Sara_Chacon_3.jpeg", "img/Sara_Chacon_4.jpeg"],
       "memorias": [
@@ -55,7 +64,7 @@
       "nombre": "Lucia",
       "cumpleanos": "6-12",
       "msj": "¡FELIZ CUMPLEAÑOS Lucia! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
-      "avatar": "img/Lucia.jpg",
+      "avatar": "img/Lucia.png",
       "color": "#00f3ff",
       "fotos": ["img/Lucia_1.jpeg", "img/Lucia_2.jpeg", "img/Lucia_3.jpeg", "img/Lucia_4.jpeg"],
       "memorias": [
@@ -66,7 +75,7 @@
       "nombre": "Nuno",
       "cumpleanos": "6-28",
       "msj": "¡FELIZ CUMPLEAÑOS Nuno! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
-      "avatar": "img/Nuno.jpg",
+      "avatar": "img/Nuno.png",
       "color": "#00f3ff",
       "fotos": ["img/Nuno_1.jpeg", "img/Nuno_2.jpeg", "img/Nuno_3.jpeg", "img/Nuno_4.jpeg"],
       "memorias": [
@@ -77,7 +86,7 @@
       "nombre": "Jimena",
       "cumpleanos": "10-8",
       "msj": "¡FELIZ CUMPLEAÑOS Jimena! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
-      "avatar": "img/Jimena.jpg",
+      "avatar": "img/Jimena.png",
       "color": "#00f3ff",
       "fotos": ["img/Jimena_1.jpeg", "img/Jimena_2.jpeg", "img/Jimena_3.jpeg", "img/Jimena_4.jpeg"],
       "memorias": [
@@ -88,7 +97,7 @@
       "nombre": "Eva",
       "cumpleanos": "",
       "msj": "¡FELIZ CUMPLEAÑOS Eva! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
-      "avatar": "img/Eva.jpg",
+      "avatar": "img/Eva.png",
       "color": "#00f3ff",
       "fotos": ["img/Eva_1.jpeg", "img/Eva_2.jpeg", "img/Eva_3.jpeg", "img/Eva_4.jpeg"],
       "memorias": [
@@ -99,7 +108,7 @@
       "nombre": "Sara Chimeno",
       "cumpleanos": "11-28",
       "msj": "¡FELIZ CUMPLEAÑOS Sara! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
-      "avatar": "img/Sara_Chimeno.jpg",
+      "avatar": "img/Sara_Chimeno.png",
       "color": "#00f3ff",
       "fotos": ["img/Sara_Chimeno_1.jpeg", "img/Sara_Chimeno_2.jpeg", "img/Sara_Chimeno_3.jpeg", "img/Sara_Chimeno_4.jpeg"],
       "memorias": [
@@ -110,7 +119,7 @@
       "nombre": "Aaron",
       "cumpleanos": "12-12",
       "msj": "¡FELIZ CUMPLEAÑOS Aaron! 🎂 Que este año venga cargado de buenos momentos. ¡A celebrar!",
-      "avatar": "img/Aaron.jpg",
+      "avatar": "img/Aaron.png",
       "color": "#00f3ff",
       "fotos": ["img/Aaron_1.jpeg", "img/Aaron_2.jpeg", "img/Aaron_3.jpeg", "img/Aaron_4.jpeg"],
       "memorias": [
@@ -120,19 +129,14 @@
   },
   "calendario": [
     { "fecha": "01-5", "tipo": "cumpleaños", "titulo": "Cumpleaños de Andrea", "persona": "Andrea" },
-    { "fecha": "01-19", "tipo": "cumpleaños", "titulo": "Cumpleaños de Sara", "persona": "Sara" },
+    { "fecha": "01-19", "tipo": "cumpleaños", "titulo": "Cumpleaños de Sara Cambero", "persona": "Sara Cambero" },
     { "fecha": "03-20", "tipo": "cumpleaños", "titulo": "Cumpleaños de Mario", "persona": "Mario" }
   ],
   "eventos": [
 
   ],
   "capsulasTiempo": [
-    {
-      "fechaApertura": "12-31",
-      "titulo": "Cápsula Fin de Año 2026",
-      "mensajes": [
-        
-      ]
-    }
+
+
   ]
 }

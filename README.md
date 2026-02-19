@@ -17,8 +17,10 @@ Abre http://localhost:3000
 ### Inicio de sesión
 
 - Cada amigo tiene su cuenta (usuario = nombre en el sistema)
-- Contraseña por defecto: **memoria**
-- Al iniciar sesión, tu foto de perfil del portal aparece en el hub
+- Contraseña por defecto: **memoria** (cámbiala al entrar)
+- La sesión dura 30 días (no hay que iniciar sesión cada vez)
+- Rate limit: 5 intentos fallidos bloquean 15 min
+- Usuario por tecleado (no se revelan cuentas existentes)
 - Sin servidor: usa "Continuar sin login" o Live Server
 
 ## Desplegar en Render
@@ -35,7 +37,7 @@ Abre http://localhost:3000
 
 4. **Variables de entorno** (en la pestaña Environment):
    - `NODE_ENV` = `production`
-   - `SESSION_SECRET` = (genera una aleatoria, ej. `openssl rand -hex 32`)
+   - `JWT_SECRET` o `SESSION_SECRET` = (genera una aleatoria, ej. `openssl rand -hex 32`)
 
 5. Deploy. Tu app quedará en `https://tu-nombre.onrender.com`
 
