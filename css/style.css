@@ -435,6 +435,19 @@ body {
   .hub-card-item h3 { font-size: 0.78rem; letter-spacing: 2px; }
   .hub-card-item p { font-size: 0.68rem; }
 
+  /* Hub screen: evitar que el menú se corte en móvil */
+  #hub-screen {
+    padding-top: 120px;
+    padding-bottom: 24px;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #hub-screen .hub-card {
+    flex-shrink: 0;
+    max-height: none;
+  }
+
   .hub-bar { padding: 10px 12px; }
   .hub-avatar { width: 96px; height: 96px; }
   .hub-user-main { width: 116px; height: 116px; }
