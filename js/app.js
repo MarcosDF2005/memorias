@@ -28,6 +28,13 @@ let currentStreak = 0;
 let bestStreak = 0;
 let currentEstadoIndex = null;
 let estadoProgressTimeout = null;
+let estadoDraft = {
+  photoDataUrl: null,
+  rotation: 0,
+  brightness: 100,
+  contrast: 100,
+  saturate: 100,
+};
 
 function pushLocalActivity(notif) {
   try {
@@ -2024,16 +2031,33 @@ function getEstadosLikesMap() {
   }
 }
 
+function getEstadoActorId() {
+  return currentUser?.userId || "guest";
+}
+
+function getEstadoLikesEntry(map, key) {
+  const entry = map[key];
+  if (entry && typeof entry === "object") return entry;
+  if (entry === true) return { legacy: true };
+  return {};
+}
+
 function isEstadoLiked(estado) {
   const map = getEstadosLikesMap();
   const key = getEstadoKey(estado);
-  return !!map[key];
+  const likesEntry = getEstadoLikesEntry(map, key);
+  const actorId = getEstadoActorId();
+  return !!likesEntry[actorId];
 }
 
 function setEstadoLiked(estado, liked) {
   const key = getEstadoKey(estado);
   const map = getEstadosLikesMap();
-  if (liked) map[key] = true;
+  const actorId = getEstadoActorId();
+  const likesEntry = getEstadoLikesEntry(map, key);
+  if (liked) likesEntry[actorId] = true;
+  else delete likesEntry[actorId];
+  if (Object.keys(likesEntry).length) map[key] = likesEntry;
   else delete map[key];
   try {
     localStorage.setItem(STORAGE_ESTADOS_LIKES, JSON.stringify(map));
@@ -2044,8 +2068,7 @@ function setEstadoLiked(estado, liked) {
   let updatedEstado = estado;
   list = list.map((e) => {
     if (getEstadoKey(e) !== key) return e;
-    const currentLikes = typeof e.likes === "number" ? e.likes : 0;
-    const nextLikes = Math.max(0, currentLikes + (liked ? 1 : -1));
+    const nextLikes = Object.keys(likesEntry).length;
     const withLikes = { ...e, likes: nextLikes };
     updatedEstado = withLikes;
     return withLikes;
@@ -2145,16 +2168,79 @@ function renderEstadosStrip() {
   if (wrap) wrap.classList.toggle("hidden", !meId);
 }
 
-function previewEstadoPhoto(input) {
+function renderEstadoPhotoTap() {
   const tap = document.querySelector(".estado-photo-tap");
+  if (!tap) return;
+  if (!estadoDraft.photoDataUrl) {
+    tap.innerHTML = `
+      <span class="estado-photo-icon">📷</span>
+      <span class="estado-photo-text">Haz una foto o elige de tu galería</span>
+    `;
+    return;
+  }
+  tap.innerHTML = `
+    <img src="${estadoDraft.photoDataUrl}" alt="" class="estado-photo-img" id="estado-photo-img-preview">
+    <span class="estado-photo-overlay">Toca para cambiar la foto</span>
+  `;
+  applyEstadoEditorPreview();
+}
+
+function resetEstadoEditor() {
+  estadoDraft.rotation = 0;
+  estadoDraft.brightness = 100;
+  estadoDraft.contrast = 100;
+  estadoDraft.saturate = 100;
+  const brightness = document.getElementById("estado-edit-brightness");
+  const contrast = document.getElementById("estado-edit-contrast");
+  const saturate = document.getElementById("estado-edit-saturate");
+  if (brightness) brightness.value = "100";
+  if (contrast) contrast.value = "100";
+  if (saturate) saturate.value = "100";
+  applyEstadoEditorPreview();
+}
+
+function applyEstadoEditorPreview() {
+  const preview = document.getElementById("estado-photo-img-preview");
+  if (!preview) return;
+  preview.style.filter = `brightness(${estadoDraft.brightness}%) contrast(${estadoDraft.contrast}%) saturate(${estadoDraft.saturate}%)`;
+  preview.style.transform = `rotate(${estadoDraft.rotation}deg)`;
+}
+
+function updateEstadoEditor() {
+  const brightness = document.getElementById("estado-edit-brightness");
+  const contrast = document.getElementById("estado-edit-contrast");
+  const saturate = document.getElementById("estado-edit-saturate");
+  estadoDraft.brightness = Number(brightness?.value || 100);
+  estadoDraft.contrast = Number(contrast?.value || 100);
+  estadoDraft.saturate = Number(saturate?.value || 100);
+  applyEstadoEditorPreview();
+}
+
+function rotateEstadoPhoto() {
+  estadoDraft.rotation = (estadoDraft.rotation + 90) % 360;
+  applyEstadoEditorPreview();
+}
+
+function pickEstadoPhoto(source) {
+  const fileInput = document.getElementById("estado-photo");
+  if (!fileInput) return;
+  if (source === "camera") {
+    fileInput.setAttribute("capture", "environment");
+  } else {
+    fileInput.removeAttribute("capture");
+  }
+  fileInput.click();
+}
+
+function previewEstadoPhoto(input) {
   const file = input?.files?.[0];
-  if (!file || !tap) return;
+  if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    tap.innerHTML = `
-      <img src="${reader.result}" alt="" class="estado-photo-img">
-      <span class="estado-photo-overlay">Toca para cambiar la foto</span>
-    `;
+    estadoDraft.photoDataUrl = String(reader.result || "");
+    renderEstadoPhotoTap();
+    const controls = document.getElementById("estado-editor-controls");
+    if (controls) controls.classList.remove("hidden");
     const modal = document.getElementById("estado-add-modal");
     if (modal) modal.classList.remove("hidden");
   };
@@ -2162,45 +2248,58 @@ function previewEstadoPhoto(input) {
 }
 
 function openEstadoAddModal() {
-  const tap = document.querySelector(".estado-photo-tap");
-  if (tap) {
-    tap.innerHTML = `
-      <span class="estado-photo-icon">📷</span>
-      <span class="estado-photo-text">Toca para hacer una foto o elegir de la galería</span>
-    `;
-  }
   const form = document.getElementById("estado-add-form");
-  if (form) form.reset();
-  const modal = document.getElementById("estado-add-modal");
-  if (modal) modal.classList.add("hidden"); // se abrirá tras elegir foto
   const fileInput = document.getElementById("estado-photo");
-  if (fileInput) fileInput.click();
+  const controls = document.getElementById("estado-editor-controls");
+  estadoDraft.photoDataUrl = null;
+  resetEstadoEditor();
+  renderEstadoPhotoTap();
+  if (form) form.reset();
+  if (fileInput) fileInput.value = "";
+  if (controls) controls.classList.add("hidden");
+  // Flujo tipo Instagram: abre cámara/galería directamente y
+  // solo mostramos el modal cuando el usuario ya eligió una foto.
+  pickEstadoPhoto("camera");
 }
 
 function closeEstadoAddModal() {
   document.getElementById("estado-add-modal")?.classList.add("hidden");
 }
 
+async function exportEditedEstadoPhoto() {
+  if (!estadoDraft.photoDataUrl) return null;
+  const img = new Image();
+  img.decoding = "async";
+  img.src = estadoDraft.photoDataUrl;
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+  });
+  const rotate = ((estadoDraft.rotation % 360) + 360) % 360;
+  const swap = rotate === 90 || rotate === 270;
+  const canvas = document.createElement("canvas");
+  canvas.width = swap ? img.height : img.width;
+  canvas.height = swap ? img.width : img.height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return estadoDraft.photoDataUrl;
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.rotate((rotate * Math.PI) / 180);
+  ctx.filter = `brightness(${estadoDraft.brightness}%) contrast(${estadoDraft.contrast}%) saturate(${estadoDraft.saturate}%)`;
+  ctx.drawImage(img, -img.width / 2, -img.height / 2);
+  return canvas.toDataURL("image/jpeg", 0.92);
+}
+
 async function submitEstado(e) {
   e.preventDefault();
   const form = e.target;
   const text = String((form.text && form.text.value) || "").trim();
-  const fileInput = document.getElementById("estado-photo");
-  const file = fileInput?.files?.[0];
-  if (!text && !file) {
+  if (!text && !estadoDraft.photoDataUrl) {
     alert("Añade al menos una foto o un texto.");
     return;
   }
   if (!currentUser?.userId || !config?.friends) return;
   const user = config.friends[currentUser.userId];
-  let photoDataUrl = null;
-  if (file) {
-    photoDataUrl = await new Promise((res) => {
-      const r = new FileReader();
-      r.onload = () => res(r.result);
-      r.readAsDataURL(file);
-    });
-  }
+  const photoDataUrl = await exportEditedEstadoPhoto();
   const estado = {
     userId: currentUser.userId,
     userName: user?.nombre || currentUser.userId,
@@ -2208,9 +2307,10 @@ async function submitEstado(e) {
     photoDataUrl: photoDataUrl || undefined,
     text: text || "",
     createdAt: Date.now(),
+    likes: 0,
   };
   let list = getEstadosList();
-  list = list.filter((e) => e.userId !== currentUser.userId);
+  list = list.filter((item) => item.userId !== currentUser.userId);
   list.unshift(estado);
   saveEstadoList(list);
   closeEstadoAddModal();
@@ -2287,7 +2387,10 @@ function openEstadoViewer(estado) {
   if (progressFill) {
     progressFill.classList.remove("running");
     progressFill.style.width = "0%";
+    progressFill.style.animation = "none";
     void progressFill.offsetWidth; // reflow
+    progressFill.style.animationDuration = `${ESTADO_VIEW_DURATION_MS}ms`;
+    progressFill.style.animation = "";
     progressFill.classList.add("running");
   }
 
@@ -2342,6 +2445,7 @@ function closeEstadoViewer() {
   if (progressFill) {
     progressFill.classList.remove("running");
     progressFill.style.width = "0%";
+    progressFill.style.animation = "none";
   }
   if (estadoProgressTimeout) {
     clearTimeout(estadoProgressTimeout);

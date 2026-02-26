@@ -181,12 +181,34 @@
         <form id="estado-add-form" class="estado-add-form" onsubmit="submitEstado(event)">
           <div class="estado-form-field">
             <label class="estado-label">📷 Foto (opcional)</label>
-            <button type="button" class="estado-photo-tap" onclick="document.getElementById('estado-photo').click()">
+            <div class="estado-upload-actions">
+              <button type="button" class="sci-fi-btn secondary estado-pick-btn" onclick="pickEstadoPhoto('camera')">Hacer foto</button>
+              <button type="button" class="sci-fi-btn secondary estado-pick-btn" onclick="pickEstadoPhoto('gallery')">Galería</button>
+            </div>
+            <button type="button" class="estado-photo-tap" onclick="pickEstadoPhoto('gallery')">
               <span class="estado-photo-icon">📷</span>
-              <span class="estado-photo-text">Toca para hacer una foto o elegir de la galería</span>
+              <span class="estado-photo-text">Elige una foto para tu historia</span>
             </button>
-            <input type="file" id="estado-photo" name="photo" accept="image/*" capture="environment" class="estado-file" onchange="previewEstadoPhoto(this)">
+            <input type="file" id="estado-photo" name="photo" accept="image/*" class="estado-file" onchange="previewEstadoPhoto(this)">
             <div id="estado-photo-preview" class="estado-photo-preview hidden"></div>
+            <div id="estado-editor-controls" class="estado-editor-controls hidden">
+              <div class="estado-editor-row">
+                <label class="estado-editor-label" for="estado-edit-brightness">Luz</label>
+                <input id="estado-edit-brightness" type="range" min="70" max="130" value="100" oninput="updateEstadoEditor()">
+              </div>
+              <div class="estado-editor-row">
+                <label class="estado-editor-label" for="estado-edit-contrast">Contraste</label>
+                <input id="estado-edit-contrast" type="range" min="80" max="140" value="100" oninput="updateEstadoEditor()">
+              </div>
+              <div class="estado-editor-row">
+                <label class="estado-editor-label" for="estado-edit-saturate">Color</label>
+                <input id="estado-edit-saturate" type="range" min="70" max="150" value="100" oninput="updateEstadoEditor()">
+              </div>
+              <div class="estado-editor-actions">
+                <button type="button" class="sci-fi-btn secondary estado-edit-btn" onclick="rotateEstadoPhoto()">Girar</button>
+                <button type="button" class="sci-fi-btn secondary estado-edit-btn" onclick="resetEstadoEditor()">Reset</button>
+              </div>
+            </div>
           </div>
           <div class="estado-form-field">
             <label class="estado-label">✏️ Texto</label>
