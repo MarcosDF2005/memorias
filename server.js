@@ -7,65 +7,51 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Rutas de datos en disco
 const DATA_FILE = path.join(__dirname, "data", "user-data.json");
 const FRIENDS_FILE = path.join(__dirname, "data", "friends.json");
+
+// Auth
 const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET || "memoria-digital-secret";
 const COOKIE_NAME = "memoria_token";
 const TOKEN_DAYS = 30;
-const PRESENCE_TTL_MS = 3 * 60 * 1000;
-const presenceMap = new Map();
 
-app.set("trust proxy", 1); // Para Render y proxies
+// Presencia (conectados)
+const PRESENCE_TTL_MS = 3 * 60 * 1000;
+const presenceMap = new Map(); // id -> timestamp
+
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(__dirname));
 
-function authMiddleware(req, res, next) {
-  const token = req.cookies?.[COOKIE_NAME];
-  if (!token) return next();
+// --- Utilidades de lectura/escritura ---
+function readUserData() {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.userId = decoded.userId;
-  } catch {}
-  next();
+    const raw = fs.readFileSync(DATA_FILE, "utf8");
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.calendario)) data.calendario = [];
+    if (!Array.isArray(data.eventos)) data.eventos = [];
+    if (!Array.isArray(data.capsulasTiempo)) data.capsulasTiempo = [];
+    if (!Array.isArray(data.notifications)) data.notifications = [];
+    if (!data.users) data.users = {};
+    return data;
+  } catch {
+    return { users: {}, calendario: [], eventos: [], capsulasTiempo: [], notifications: [] };
+  }
 }
 
-app.use(authMiddleware);
+function writeUserData(data) {
+  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), "utf8");
+}
 
 function readFriends() {
   try {
     return JSON.parse(fs.readFileSync(FRIENDS_FILE, "utf8"));
   } catch {
-    return { friends: {} };
-  }
-}
-
-function readUserData() {
-  try {
-    const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-    if (!Array.isArray(data.notifications)) {
-      data.notifications = [];
-      const cal = data.calendario || [];
-      const evt = data.eventos || [];
-      const caps = data.capsulasTiempo || [];
-      const toMigrate = [...cal.filter(x => x.id), ...evt.filter(x => x.id), ...caps.filter(x => x.id)].slice(-8);
-      toMigrate.forEach((item, i) => {
-        const type = String(item.id || "").startsWith("cal_") ? "calendario" : String(item.id || "").startsWith("evt_") ? "evento" : "capsula";
-        const title = item.titulo || (type === "calendario" ? "Fecha" : type === "evento" ? "Evento" : "Cápsula");
-        data.notifications.push({
-          id: "mig_" + Date.now() + "_" + i,
-          type,
-          title,
-          subtitle: "Entrada existente",
-          screen: type === "calendario" ? "calendar-screen" : type === "evento" ? "eventos-screen" : "capsulas-screen",
-          createdAt: new Date().toISOString(),
-        });
-      });
-      if (data.notifications.length > 0) writeUserData(data);
-    }
-    return data;
-  } catch {
-    return { calendario: [], eventos: [], capsulasTiempo: [], notifications: [] };
+    return { friends: {}, friendOrder: [], terminalStrings: [] };
   }
 }
 
@@ -76,26 +62,36 @@ function pushNotification(data, notif) {
     ...notif,
     createdAt: new Date().toISOString(),
   });
-  const maxNotifs = 50;
-  if (data.notifications.length > maxNotifs) {
-    data.notifications = data.notifications.slice(0, maxNotifs);
+  const max = 50;
+  if (data.notifications.length > max) {
+    data.notifications = data.notifications.slice(0, max);
   }
 }
 
-function writeUserData(data) {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), "utf8");
+// --- Auth middleware ---
+function authMiddleware(req, _res, next) {
+  const token = req.cookies?.[COOKIE_NAME];
+  if (!token) return next();
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.userId = decoded.userId;
+  } catch {
+    // token inválido -> ignorar
+  }
+  next();
 }
 
-// --- Calendario ---
-app.get("/api/calendario", (req, res) => {
+app.use(authMiddleware);
+
+// --- Rutas de calendario ---
+app.get("/api/calendario", (_req, res) => {
   const data = readUserData();
   res.json(data.calendario || []);
 });
 
 app.post("/api/calendario", (req, res) => {
   const data = readUserData();
-  const { fecha, tipo, titulo, descripcion } = req.body;
+  const { fecha, tipo, titulo, descripcion } = req.body || {};
   const item = {
     id: "cal_" + Date.now(),
     fecha,
@@ -106,6 +102,7 @@ app.post("/api/calendario", (req, res) => {
   };
   data.calendario = data.calendario || [];
   data.calendario.push(item);
+
   const friends = readFriends();
   const nombre = req.userId ? (friends.friends?.[req.userId]?.nombre || req.userId) : "Alguien";
   pushNotification(data, {
@@ -115,29 +112,31 @@ app.post("/api/calendario", (req, res) => {
     createdBy: req.userId,
     screen: "calendar-screen",
   });
+
   writeUserData(data);
   res.status(201).json(item);
 });
 
 app.delete("/api/calendario/:id", (req, res) => {
+  const id = String(req.params.id || "");
   const data = readUserData();
-  data.calendario = (data.calendario || []).filter((x) => x.id !== req.params.id);
+  data.calendario = (data.calendario || []).filter((x) => x.id !== id);
   writeUserData(data);
   res.status(204).send();
 });
 
-// --- Eventos ---
-app.get("/api/eventos", (req, res) => {
+// --- Rutas de eventos ---
+app.get("/api/eventos", (_req, res) => {
   const data = readUserData();
   res.json(data.eventos || []);
 });
 
 app.post("/api/eventos", (req, res) => {
   const data = readUserData();
-  const { fecha, titulo, descripcion, lugar } = req.body;
+  const { fecha, titulo, descripcion, lugar } = req.body || {};
   const item = {
     id: "evt_" + Date.now(),
-    fecha: fecha || "",
+    fecha,
     titulo: titulo || "",
     descripcion: descripcion || undefined,
     lugar: lugar || undefined,
@@ -145,6 +144,7 @@ app.post("/api/eventos", (req, res) => {
   };
   data.eventos = data.eventos || [];
   data.eventos.push(item);
+
   const friends = readFriends();
   const nombre = req.userId ? (friends.friends?.[req.userId]?.nombre || req.userId) : "Alguien";
   pushNotification(data, {
@@ -154,109 +154,117 @@ app.post("/api/eventos", (req, res) => {
     createdBy: req.userId,
     screen: "eventos-screen",
   });
+
   writeUserData(data);
   res.status(201).json(item);
 });
 
 app.delete("/api/eventos/:id", (req, res) => {
+  const id = String(req.params.id || "");
   const data = readUserData();
-  data.eventos = (data.eventos || []).filter((x) => x.id !== req.params.id);
+  data.eventos = (data.eventos || []).filter((x) => x.id !== id);
   writeUserData(data);
   res.status(204).send();
 });
 
 // --- Cápsulas del tiempo ---
-function canAccessCapsulaServer(cap, userId) {
-  if (!cap.permittedUsers || cap.permittedUsers.length === 0) return true;
-  if (userId && cap.createdBy === userId) return true;
-  return userId && cap.permittedUsers.includes(userId);
-}
-
 app.get("/api/capsulas", (req, res) => {
   const data = readUserData();
-  const capsulas = data.capsulasTiempo || [];
-  const filtered = capsulas.filter((cap) => canAccessCapsulaServer(cap, req.userId));
-  res.json(filtered);
-});
-
-app.get("/api/capsulas/:id", (req, res) => {
-  const data = readUserData();
-  const capsulas = data.capsulasTiempo || [];
-  const cap = capsulas.find((c) => c.id === req.params.id);
-  if (!cap) return res.status(404).json({ ok: false, error: "Cápsula no encontrada" });
-  if (!canAccessCapsulaServer(cap, req.userId)) {
-    return res.status(403).json({ ok: false, error: "No tienes acceso a esta cápsula" });
+  let caps = data.capsulasTiempo || [];
+  const userId = req.userId;
+  if (userId) {
+    // Filtrado básico: si tiene permittedUsers, solo las que incluyan al usuario
+    caps = caps.filter((c) => {
+      if (!Array.isArray(c.permittedUsers) || c.permittedUsers.length === 0) return true;
+      return c.permittedUsers.includes(userId);
+    });
   }
-  res.json(cap);
+  res.json(caps);
 });
 
 app.post("/api/capsulas", (req, res) => {
   const data = readUserData();
-  const { titulo, fechaApertura, permittedUsers, createdBy } = req.body;
+  const { titulo, fechaApertura, permittedUsers } = req.body || {};
   const item = {
     id: "cap_" + Date.now(),
     titulo: titulo || "",
     fechaApertura: fechaApertura || "",
+    permittedUsers: Array.isArray(permittedUsers) && permittedUsers.length ? permittedUsers : undefined,
+    createdBy: req.userId || undefined,
     mensajes: [],
-    permittedUsers: Array.isArray(permittedUsers) ? permittedUsers : undefined,
-    createdBy: createdBy || undefined,
   };
   data.capsulasTiempo = data.capsulasTiempo || [];
   data.capsulasTiempo.push(item);
+
   const friends = readFriends();
-  const capCreatedBy = req.body.createdBy || req.userId;
-  const nombre = capCreatedBy ? (friends.friends?.[capCreatedBy]?.nombre || capCreatedBy) : "Alguien";
+  const nombre = req.userId ? (friends.friends?.[req.userId]?.nombre || req.userId) : "Alguien";
   pushNotification(data, {
     type: "capsula",
     title: titulo || "Nueva cápsula",
     subtitle: `${nombre} creó una cápsula del tiempo`,
-    createdBy: capCreatedBy,
+    createdBy: req.userId,
     screen: "capsulas-screen",
   });
+
   writeUserData(data);
   res.status(201).json(item);
 });
 
-app.post("/api/capsulas/:id/mensajes", (req, res) => {
-  if (!req.userId) return res.status(401).json({ ok: false, error: "Debes iniciar sesión" });
+app.get("/api/capsulas/:id", (req, res) => {
+  const id = String(req.params.id || "");
   const data = readUserData();
-  const capsulas = data.capsulasTiempo || [];
-  const cap = capsulas.find((c) => c.id === req.params.id);
-  if (!cap) return res.status(404).json({ ok: false, error: "Cápsula no encontrada" });
-  if (!canAccessCapsulaServer(cap, req.userId)) {
-    return res.status(403).json({ ok: false, error: "No tienes acceso a esta cápsula" });
-  }
-  const { msj } = req.body;
-  const friends = readFriends();
-  const nombre = req.body.de || friends.friends?.[req.userId]?.nombre || req.userId;
-  const mensaje = { de: nombre, msj: (msj || "").trim() };
-  if (!mensaje.msj) return res.status(400).json({ ok: false, error: "El mensaje no puede estar vacío" });
+  const cap = (data.capsulasTiempo || []).find((c) => c.id === id);
+  if (!cap) return res.status(404).json({ ok: false, error: "No encontrada" });
+  res.json(cap);
+});
+
+app.delete("/api/capsulas/:id", (req, res) => {
+  const id = String(req.params.id || "");
+  const data = readUserData();
+  data.capsulasTiempo = (data.capsulasTiempo || []).filter((c) => c.id !== id);
+  writeUserData(data);
+  res.status(204).send();
+});
+
+app.post("/api/capsulas/:id/mensajes", (req, res) => {
+  const id = String(req.params.id || "");
+  const { msj } = req.body || {};
+  const data = readUserData();
+  const caps = data.capsulasTiempo || [];
+  const cap = caps.find((c) => c.id === id);
+  if (!cap) return res.status(404).json({ ok: false, error: "No encontrada" });
   cap.mensajes = cap.mensajes || [];
+  const mensaje = {
+    id: "msg_" + Date.now(),
+    msj: String(msj || "").slice(0, 1000),
+    createdBy: req.userId || undefined,
+    createdAt: new Date().toISOString(),
+  };
   cap.mensajes.push(mensaje);
   writeUserData(data);
   res.status(201).json(mensaje);
 });
 
-app.delete("/api/capsulas/:id", (req, res) => {
-  if (!req.userId) return res.status(401).json({ ok: false, error: "Debes iniciar sesión" });
+// --- Notificaciones ---
+app.get("/api/notifications", (_req, res) => {
   const data = readUserData();
-  const capsulas = data.capsulasTiempo || [];
-  const cap = capsulas.find((c) => c.id === req.params.id);
-  if (!cap) return res.status(404).json({ ok: false, error: "Cápsula no encontrada" });
-  if (!cap.createdBy || cap.createdBy !== req.userId) {
-    return res.status(403).json({ ok: false, error: "Solo el creador puede borrar esta cápsula" });
-  }
-  data.capsulasTiempo = capsulas.filter((x) => x.id !== req.params.id);
+  const notifs = (data.notifications || []).slice(0, 20);
+  res.json(notifs);
+});
+
+app.delete("/api/notifications/:id", (req, res) => {
+  const id = String(req.params.id || "");
+  const data = readUserData();
+  data.notifications = (data.notifications || []).filter((n) => n.id !== id);
   writeUserData(data);
   res.status(204).send();
 });
 
-// --- Notificaciones ---
-app.get("/api/notifications", (req, res) => {
+app.delete("/api/notifications", (_req, res) => {
   const data = readUserData();
-  data.notifications = data.notifications || [];
-  const notifs = data.notifications.slice(0, 20);
-  res.json(notifs);
+  data.notifications = [];
+  writeUserData(data);
+  res.status(204).send();
 });
 
 // --- Presencia (conectados) ---
@@ -270,14 +278,14 @@ app.post("/api/presence", (req, res) => {
   res.json({ ok: true });
 });
 
-app.get("/api/presence", (req, res) => {
+app.get("/api/presence", (_req, res) => {
   const cutoff = Date.now() - PRESENCE_TTL_MS;
-  let count = 0;
+  const ids = [];
   for (const [k, t] of presenceMap.entries()) {
-    if (t >= cutoff) count++;
+    if (t >= cutoff) ids.push(k);
     else presenceMap.delete(k);
   }
-  res.json({ count });
+  res.json({ count: ids.length, ids });
 });
 
 // --- Auth ---
@@ -301,9 +309,10 @@ app.post("/api/auth/login", (req, res) => {
   if (!input || !password) {
     return res.status(400).json({ ok: false, error: "Faltan usuario o contraseña" });
   }
+
   const data = readUserData();
   const users = data.users || {};
-  const username = Object.keys(users).find(k => k.toLowerCase() === input.toLowerCase());
+  const username = Object.keys(users).find((k) => k.toLowerCase() === input.toLowerCase());
   const user = username ? users[username] : null;
   if (!user?.passwordHash) {
     return res.status(401).json({ ok: false, error: "Usuario o contraseña incorrectos" });
@@ -311,13 +320,11 @@ app.post("/api/auth/login", (req, res) => {
   if (!bcrypt.compareSync(password, user.passwordHash)) {
     return res.status(401).json({ ok: false, error: "Usuario o contraseña incorrectos" });
   }
-  const token = jwt.sign(
-    { userId: username },
-    JWT_SECRET,
-    { expiresIn: TOKEN_DAYS + "d" }
-  );
+
+  const token = jwt.sign({ userId: username }, JWT_SECRET, { expiresIn: `${TOKEN_DAYS}d` });
   const friends = readFriends();
-  const friendData = friends.friends?.[username];
+  const friendData = friends.friends?.[username] || {};
+
   res
     .cookie(COOKIE_NAME, token, {
       httpOnly: true,
@@ -329,35 +336,45 @@ app.post("/api/auth/login", (req, res) => {
     .json({
       ok: true,
       userId: username,
-      nombre: friendData?.nombre || username,
-      avatar: friendData?.avatar || "",
-      color: friendData?.color || "#00f3ff",
+      nombre: friendData.nombre || username,
+      avatar: friendData.avatar || "",
+      color: friendData.color || "#00f3ff",
     });
 });
 
 app.post("/api/auth/logout", (req, res) => {
-  res.clearCookie(COOKIE_NAME, { path: "/" }).json({ ok: true });
+  res.clearCookie(COOKIE_NAME, { path: "/" });
+  res.json({ ok: true });
 });
 
 app.post("/api/auth/change-password", (req, res) => {
-  if (!req.userId) return res.status(401).json({ ok: false, error: "No autorizado" });
-  const { currentPassword, newPassword } = req.body;
-  if (!currentPassword || !newPassword || newPassword.length < 4) {
-    return res.status(400).json({ ok: false, error: "Contraseña nueva mínimo 4 caracteres" });
+  if (!req.userId) return res.status(401).json({ ok: false, error: "No autenticado" });
+  const { currentPassword, newPassword } = req.body || {};
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ ok: false, error: "Faltan datos" });
   }
   const data = readUserData();
   const users = data.users || {};
   const user = users[req.userId];
-  if (!user?.passwordHash || !bcrypt.compareSync(currentPassword, user.passwordHash)) {
+  if (!user?.passwordHash) {
+    return res.status(400).json({ ok: false, error: "Usuario no encontrado" });
+  }
+  if (!bcrypt.compareSync(currentPassword, user.passwordHash)) {
     return res.status(401).json({ ok: false, error: "Contraseña actual incorrecta" });
   }
-  user.passwordHash = bcrypt.hashSync(newPassword, 10);
+  const hash = bcrypt.hashSync(newPassword, 10);
+  users[req.userId].passwordHash = hash;
   data.users = users;
   writeUserData(data);
   res.json({ ok: true });
 });
 
-const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
-app.listen(PORT, HOST, () => {
-  console.log(`Memoria Digital → http://localhost:${PORT}`);
+// Fallback: cualquier otra ruta devuelve index.html (SPA)
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
 });
+
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+});
+

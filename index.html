@@ -44,12 +44,34 @@
         <div class="hub-user-trigger">
           <button type="button" class="hub-user-main" onclick="toggleProfileMenu()" id="hub-profile-btn" aria-expanded="false" aria-haspopup="true" aria-controls="hub-profile-menu" aria-label="Perfil">
             <span class="hub-status-dot" title="En línea" aria-hidden="true"></span>
+            <span id="hub-badge-icon" class="hub-badge-icon hidden" aria-hidden="true"></span>
             <img id="hub-avatar" class="hub-avatar" src="" alt="" decoding="async" loading="eager">
             <span id="hub-name" class="sr-only"></span>
             <span id="hub-next-bday" class="sr-only"></span>
           </button>
           <div class="hub-profile-menu hidden" id="hub-profile-menu" role="menu" aria-labelledby="hub-profile-btn">
             <div class="profile-summary" id="profile-summary"><!-- Rellenado por JS --></div>
+            <div
+              id="streak-widget"
+              class="streak-widget profile-streak-widget"
+              onclick="openStreakModal()"
+              role="button"
+              tabindex="0"
+              aria-label="Ver detalles de tu racha"
+            >
+              <div class="streak-header-row">
+                <span class="streak-label">Racha</span>
+                <span id="streak-count" class="streak-count">Sin racha aún</span>
+              </div>
+              <div class="streak-bar-outer">
+                <div id="streak-bar-inner" class="streak-bar-inner"></div>
+              </div>
+              <div class="streak-footer-row">
+                <span id="streak-next" class="streak-next"></span>
+                <div id="streak-achievements" class="streak-achievements"></div>
+              </div>
+            </div>
+            <button type="button" class="menu-item" onclick="openBadgesModal()" role="menuitem">🏅 Mis medallas</button>
             <button type="button" class="menu-item" id="btn-mi-portal-bday" onclick="goToMyPortal()" role="menuitem">🎁 Mi portal de cumpleaños</button>
             <div class="menu-section-label">Cuenta</div>
             <button type="button" class="menu-item" onclick="openChangePassword()" role="menuitem">🔐 Cambiar contraseña</button>
@@ -62,6 +84,22 @@
         </div>
       </div>
       <div class="hub-bar-right">
+        <div class="hub-presence-trigger">
+          <button
+            type="button"
+            class="hub-presence-btn"
+            id="hub-presence-btn"
+            onclick="togglePresenceMenu()"
+            aria-expanded="false"
+            aria-haspopup="true"
+            aria-controls="hub-presence-dropdown"
+            aria-label="Conectados"
+          >
+            <span class="hub-presence-icon" aria-hidden="true">👥</span>
+            <span class="presence-badge hidden" id="presence-badge" aria-live="polite">0</span>
+          </button>
+          <div class="hub-presence-dropdown hidden" id="hub-presence-dropdown" role="menu" aria-labelledby="hub-presence-btn"></div>
+        </div>
         <div class="hub-notif-trigger">
           <button type="button" class="hub-notifications" id="hub-notifications" onclick="toggleNotifications()" aria-expanded="false" aria-haspopup="true" aria-controls="hub-notif-dropdown" aria-label="Notificaciones">
             <span class="notif-icon" aria-hidden="true">🔔</span>
@@ -87,6 +125,123 @@
           <p id="change-pw-error" class="login-error hidden"></p>
           <button type="submit" class="sci-fi-btn">GUARDAR</button>
         </form>
+      </div>
+    </div>
+    <!-- Modal detalles de racha -->
+    <div id="streak-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeStreakModal()">
+      <div class="modal-content streak-modal-content" onclick="event.stopPropagation()">
+        <h3 class="streak-modal-title">Tu racha de recuerdos</h3>
+        <div class="streak-metric-grid">
+          <div class="streak-metric">
+            <span class="streak-metric-label">Actual</span>
+            <span id="streak-modal-current" class="streak-metric-value">0 días</span>
+          </div>
+          <div class="streak-metric">
+            <span class="streak-metric-label">Mejor</span>
+            <span id="streak-modal-best" class="streak-metric-value">0 días</span>
+          </div>
+          <div class="streak-metric">
+            <span class="streak-metric-label">Próx. logro</span>
+            <span id="streak-modal-next" class="streak-metric-value">—</span>
+          </div>
+        </div>
+        <div id="streak-modal-achievements" class="streak-modal-achievements"></div>
+        <div id="streak-modal-badges" class="streak-modal-badges"></div>
+        <button type="button" class="streak-info-btn" onclick="toggleStreakInfo()">¿Cómo funciona la racha?</button>
+        <div id="streak-modal-tips" class="streak-modal-tips hidden">
+          <p class="streak-modal-tip-title">Cómo mantener la racha:</p>
+          <ul>
+            <li>Sube al menos un estado, evento o entrada de calendario cada día.</li>
+            <li>Si un día se te pasa, la racha vuelve a 1 al siguiente uso.</li>
+            <li>Al llegar a 7, 15 y 30 días desbloqueas logros especiales.</li>
+          </ul>
+        </div>
+        <button type="button" class="sci-fi-btn btn-add-full" onclick="closeStreakModal()">Entendido</button>
+      </div>
+    </div>
+
+    <!-- Modal gestión de medallas -->
+    <div id="badges-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeBadgesModal()">
+      <div class="modal-content badges-modal-content" onclick="event.stopPropagation()">
+        <h3 class="streak-modal-title">Tus medallas</h3>
+        <p class="badges-modal-subtitle">Elige qué medalla se muestra junto a tu avatar. Solo ves las que ya has desbloqueado.</p>
+        <div id="badges-modal-grid" class="badges-modal-grid"></div>
+        <button type="button" class="sci-fi-btn btn-add-full" onclick="closeBadgesModal()">Cerrar</button>
+      </div>
+    </div>
+    <!-- Franja de estados (historias 24h) -->
+    <div class="estados-strip-wrap" id="estados-strip-wrap">
+      <div class="estados-strip" id="estados-strip" role="list"></div>
+    </div>
+    <!-- Modal publicar estado -->
+    <div id="estado-add-modal" class="modal-overlay estado-modal hidden" onclick="if(event.target===this)closeEstadoAddModal()">
+      <div class="modal-content estado-add-content" onclick="event.stopPropagation()">
+        <h3 class="estado-modal-title">Tu estado</h3>
+        <p class="estado-modal-hint">Visible 24 horas · Foto y/o texto</p>
+        <form id="estado-add-form" class="estado-add-form" onsubmit="submitEstado(event)">
+          <div class="estado-form-field">
+            <label class="estado-label">📷 Foto (opcional)</label>
+            <button type="button" class="estado-photo-tap" onclick="document.getElementById('estado-photo').click()">
+              <span class="estado-photo-icon">📷</span>
+              <span class="estado-photo-text">Toca para hacer una foto o elegir de la galería</span>
+            </button>
+            <input type="file" id="estado-photo" name="photo" accept="image/*" capture="environment" class="estado-file" onchange="previewEstadoPhoto(this)">
+            <div id="estado-photo-preview" class="estado-photo-preview hidden"></div>
+          </div>
+          <div class="estado-form-field">
+            <label class="estado-label">✏️ Texto</label>
+            <textarea name="text" class="estado-textarea" placeholder="¿Qué tal el día?" maxlength="150" rows="3"></textarea>
+          </div>
+          <div class="estado-modal-actions">
+            <button type="button" class="sci-fi-btn secondary" onclick="closeEstadoAddModal()">Cancelar</button>
+            <button type="submit" class="sci-fi-btn btn-estado-publish">Publicar estado</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Visor de estado (story) -->
+    <div id="estado-viewer" class="estado-viewer hidden" onclick="closeEstadoViewer()">
+      <button type="button" class="estado-viewer-close" onclick="closeEstadoViewer()" aria-label="Cerrar">×</button>
+      <div class="estado-viewer-inner" onclick="event.stopPropagation()">
+        <div class="estado-progress-bar">
+          <div id="estado-progress-fill" class="estado-progress-fill"></div>
+        </div>
+        <div class="estado-viewer-top">
+          <div class="estado-viewer-user">
+            <img id="estado-viewer-avatar" class="estado-viewer-avatar" src="" alt="">
+            <span id="estado-viewer-username" class="estado-viewer-username"></span>
+          </div>
+        </div>
+        <img id="estado-viewer-img" class="estado-viewer-img" src="" alt="">
+        <div id="estado-viewer-no-photo" class="estado-viewer-no-photo hidden"></div>
+        <div class="estado-viewer-text-wrap">
+          <p id="estado-viewer-text" class="estado-viewer-text"></p>
+          <span id="estado-viewer-name" class="estado-viewer-name"></span>
+        </div>
+        <div class="estado-reactions">
+          <button type="button" class="estado-reaction-btn" data-reaction="😍" onclick="toggleEstadoReaction(event, '😍')">😍</button>
+          <button type="button" class="estado-reaction-btn" data-reaction="😂" onclick="toggleEstadoReaction(event, '😂')">😂</button>
+          <button type="button" class="estado-reaction-btn" data-reaction="❤️" onclick="toggleEstadoReaction(event, '❤️')">❤️</button>
+        </div>
+        <div class="estado-viewer-actions">
+          <button
+            type="button"
+            id="estado-like-btn"
+            class="estado-like-btn"
+            onclick="toggleEstadoLike(event)"
+            aria-label="Marcar como me gusta"
+          >
+            ♡ Me gusta
+          </button>
+          <button
+            type="button"
+            id="estado-delete-btn"
+            class="sci-fi-btn secondary estado-delete-btn"
+            onclick="deleteCurrentEstado(event)"
+          >
+            Eliminar estado
+          </button>
+        </div>
       </div>
     </div>
     <div class="cyber-card hub-card">
@@ -159,12 +314,28 @@
           <button type="button" class="calendar-arrow" onclick="changeCalendarMonth(1)">›</button>
         </div>
       </header>
-      <div class="calendar-grid">
+      <div class="calendar-controls">
+        <select id="calendar-filter" class="calendar-filter-select" onchange="onCalendarFilterChange(this.value)">
+          <option value="todos">Todos los tipos</option>
+          <option value="cumpleaños">Cumpleaños</option>
+          <option value="vacaciones">Vacaciones</option>
+          <option value="evento">Evento</option>
+          <option value="examen">Examen</option>
+          <option value="otro">Otro</option>
+        </select>
+        <div class="calendar-view-toggle">
+          <button type="button" id="calendar-view-month" class="calendar-view-btn active" onclick="setCalendarView('month')">Vista mes</button>
+          <button type="button" id="calendar-view-7" class="calendar-view-btn" onclick="setCalendarView('list', 7)">Próx 7 días</button>
+          <button type="button" id="calendar-view-30" class="calendar-view-btn" onclick="setCalendarView('list', 30)">Próx 30 días</button>
+        </div>
+      </div>
+      <div class="calendar-grid" id="calendar-month-view">
         <div class="calendar-weekdays">
           <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
         </div>
         <div id="calendar-days" class="calendar-days"></div>
       </div>
+      <div id="calendar-list-view" class="calendar-list-view hidden"></div>
     </div>
 
     <!-- Modal para añadir en un día -->
@@ -349,6 +520,39 @@
       <div id="memorias-list" class="content-list"></div>
     </div>
   </section>
+
+  <!-- Onboarding inicial (solo primera vez) -->
+  <div id="onboarding-overlay" class="onboarding-overlay hidden">
+    <div class="onboarding-card">
+      <h2 class="onboarding-title">Bienvenido a MEMORIA DIGITAL</h2>
+      <p class="onboarding-subtitle">Te explico en 3 pasos cómo funciona.</p>
+      <div class="onboarding-step">
+        <h3 id="onb-step-title" class="onboarding-step-title"></h3>
+        <p id="onb-step-text" class="onboarding-step-text"></p>
+      </div>
+      <div class="onboarding-dots">
+        <span class="onb-dot" data-step="0"></span>
+        <span class="onb-dot" data-step="1"></span>
+        <span class="onb-dot" data-step="2"></span>
+      </div>
+      <div class="onboarding-actions">
+        <button type="button" class="sci-fi-btn secondary" onclick="skipOnboarding()">Saltar</button>
+        <button type="button" id="onb-next-btn" class="sci-fi-btn" onclick="nextOnboardingStep()">Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tour rápido por el hub (tooltips) -->
+  <div id="hub-tour-overlay" class="hub-tour-overlay hidden">
+    <div class="hub-tour-backdrop" onclick="endHubTour()"></div>
+    <div id="hub-tour-tooltip" class="hub-tour-tooltip">
+      <p id="hub-tour-text"></p>
+      <div class="hub-tour-actions">
+        <button type="button" class="sci-fi-btn secondary" onclick="endHubTour()">Omitir</button>
+        <button type="button" id="hub-tour-next-btn" class="sci-fi-btn" onclick="nextHubTourStep()">Siguiente</button>
+      </div>
+    </div>
+  </div>
 </main>
 
 <script src="js/app.js"></script>
