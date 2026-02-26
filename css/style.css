@@ -4059,6 +4059,16 @@ select.form-input option:focus,
     padding: 10px;
   }
 
+  #login-screen {
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+  }
+
+  #login-screen .login-card {
+    margin: auto;
+  }
+
   .cyber-card {
     width: 100%;
     max-width: 100%;
@@ -4067,18 +4077,33 @@ select.form-input option:focus,
   }
 
   #hub-screen {
-    padding-top: 116px;
+    padding-top: 96px;
     padding-bottom: 16px;
   }
 
   .hub-user-main {
-    width: 130px;
-    height: 130px;
+    width: 122px;
+    height: 122px;
   }
 
   .hub-avatar {
-    width: 110px;
-    height: 110px;
+    width: 102px;
+    height: 102px;
+  }
+
+  .hub-bar {
+    padding: 8px 10px 6px;
+  }
+
+  .hub-bar-right {
+    margin-top: 10px;
+    gap: 8px;
+  }
+
+  .hub-presence-btn,
+  .hub-notifications {
+    width: 40px;
+    height: 40px;
   }
 
   .hub-badge-icon {
@@ -4094,7 +4119,7 @@ select.form-input option:focus,
   .estado-item-avatar-wrap,
   .estado-item-avatar {
     width: 100px;
-    height: 100%;
+    height: 100px;
   }
 
   .hub-profile-menu,
@@ -4130,18 +4155,37 @@ select.form-input option:focus,
     letter-spacing: 1.4px;
   }
 
+  #login-screen {
+    padding: 10px;
+  }
+
   #hub-screen {
-    padding-top: 108px;
+    padding-top: 92px;
   }
 
   .hub-user-main {
-    width: 105px;
-    height: 105px;
+    width: 112px;
+    height: 112px;
   }
 
   .hub-avatar {
-    width: 90px;
-    height: 90px;
+    width: 94px;
+    height: 94px;
+  }
+
+  .hub-bar {
+    padding: 6px 8px 4px;
+  }
+
+  .hub-bar-right {
+    margin-top: 8px;
+    gap: 6px;
+  }
+
+  .hub-presence-btn,
+  .hub-notifications {
+    width: 38px;
+    height: 38px;
   }
 
   .hub-nav {
