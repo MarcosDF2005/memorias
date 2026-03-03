@@ -192,8 +192,8 @@ async function addCapsulaItem(item) {
   const payload = {
     titulo: item.titulo || "",
     fechaApertura: item.fechaApertura || "",
-    permittedUsers: item.permittedUsers && item.permittedUsers.length > 0 ? item.permittedUsers : undefined,
-    createdBy: item.createdBy || undefined,
+    // Enviamos blockedUsers al backend; internamente seguimos usando permittedUsers como alias
+    blockedUsers: item.permittedUsers && item.permittedUsers.length > 0 ? item.permittedUsers : undefined,
   };
   try {
     const res = await fetch(`${API_BASE}/api/capsulas`, {
@@ -246,6 +246,13 @@ async function addMensajeCapsulaApi(capId, msj) {
     });
     if (res.ok) {
       const mensaje = await res.json();
+      // Si el backend no devuelve el nombre, lo rellenamos con el del usuario actual
+      if (mensaje && !mensaje.de && currentUser) {
+        mensaje.de =
+          currentUser.nombre ||
+          config?.friends?.[currentUser.userId || ""]?.nombre ||
+          "Alguien";
+      }
       const cap = capsulasCache.find((c) => c.id === capId);
       if (cap) {
         cap.mensajes = cap.mensajes || [];
@@ -267,9 +274,17 @@ async function addMensajeCapsulaApi(capId, msj) {
 
 /** Comprueba si el usuario actual puede acceder a la cápsula */
 function canAccessCapsula(cap) {
-  if (!cap.permittedUsers || cap.permittedUsers.length === 0) return true;
+  const blocked = Array.isArray(cap.blockedUsers)
+    ? cap.blockedUsers
+    : Array.isArray(cap.permittedUsers)
+    ? cap.permittedUsers
+    : [];
+  // Sin bloqueados -> todos pueden
+  if (blocked.length === 0) return true;
+  // El creador siempre tiene acceso
   if (currentUser && cap.createdBy === currentUser.userId) return true;
-  return currentUser && cap.permittedUsers.includes(currentUser.userId);
+  // Si estás en la lista, estás bloqueado
+  return currentUser && !blocked.includes(currentUser.userId);
 }
 
 /** Comprueba si el portal está abierto: hoy es su cumple o ya pasó este año */
@@ -339,6 +354,65 @@ function goToHub() {
 
 function goToSelector() {
   showScreen("selector-screen");
+}
+
+function openProfileScreen(userId) {
+  if (!config?.friends) return;
+  const resolvedId = userId || currentUser?.userId;
+  if (!resolvedId) return;
+  const user = config.friends[resolvedId];
+  const isMe = currentUser && resolvedId === currentUser.userId;
+  const name = user?.nombre || (isMe ? currentUser.nombre : resolvedId) || "Perfil";
+  const avatar = user?.avatar || (isMe ? currentUser.avatar : "") || "";
+
+  const avatarEl = document.getElementById("profile-avatar-lg");
+  const nameEl = document.getElementById("profile-name");
+  const subtitleEl = document.getElementById("profile-subtitle");
+  const statsEl = document.getElementById("profile-stats");
+  const gridEl = document.getElementById("profile-photos-grid");
+  if (!avatarEl || !nameEl || !subtitleEl || !statsEl || !gridEl) return;
+
+  avatarEl.src = avatar;
+  nameEl.textContent = name.toUpperCase();
+  subtitleEl.textContent = "Tus recuerdos en imágenes";
+
+  // Fotos desde tus estados con imagen
+  const allEstados = getEstadosList()
+    .map((e, idx) => ({ ...e, idx }))
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  const ownFotos = allEstados.filter(
+    (e) => e.userId === resolvedId && e.photoDataUrl
+  );
+
+  const countFotos = ownFotos.length;
+  const countEstados = allEstados.filter((e) => e.userId === resolvedId).length;
+
+  statsEl.innerHTML = `
+    <div class="profile-stat">
+      <span class="profile-stat-number">${countFotos}</span>
+      <span class="profile-stat-label">Fotos</span>
+    </div>
+    <div class="profile-stat">
+      <span class="profile-stat-number">${countEstados}</span>
+      <span class="profile-stat-label">Estados</span>
+    </div>
+  `;
+
+  if (countFotos === 0) {
+    gridEl.innerHTML = "<p class='empty-msg'>Aún no hay fotos en los estados de este perfil.</p>";
+  } else {
+    gridEl.innerHTML = ownFotos
+      .map(
+        (e) => `
+        <button type="button" class="profile-photo" onclick="openEstadoViewerByIndex(${e.idx})">
+          <img src="${e.photoDataUrl}" alt="" decoding="async" loading="lazy">
+        </button>
+      `
+      )
+      .join("");
+  }
+
+  showScreen("profile-screen");
 }
 
 // --- Hub ---
@@ -738,14 +812,39 @@ function renderCapsulaPermittedCheckboxes() {
   container.innerHTML = order.map((id) => {
     const d = config.friends?.[id];
     const nombre = d?.nombre || id;
+    const avatar = d?.avatar || "";
+    const initials = (nombre || id).split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase();
     const safeVal = String(id).replace(/"/g, "&quot;");
     return `
-      <label class="permitted-chip">
+      <label class="permitted-chip" data-user-id="${safeVal}">
         <input type="checkbox" name="permitted" value="${safeVal}">
-        <span class="chip-label">${nombre.replace(/</g, "&lt;")}</span>
+        <div class="chip-row">
+          <div class="chip-avatar">
+            ${avatar ? `<img src="${avatar}" alt="">` : `<span>${initials}</span>`}
+          </div>
+          <div class="chip-name">${nombre.replace(/</g, "&lt;")}</div>
+          <div class="chip-toggle">Añadir</div>
+        </div>
       </label>
     `;
   }).join("");
+
+  // Toggle visual de selección
+  container.querySelectorAll(".permitted-chip").forEach((chip) => {
+    chip.addEventListener("click", (e) => {
+      e.preventDefault();
+      const target = e.target;
+      if (target && target.tagName === "INPUT") return;
+      const input = chip.querySelector('input[type="checkbox"]');
+      if (!input) return;
+      const checkbox = /** @type {HTMLInputElement} */ (input);
+      const nowChecked = !checkbox.checked;
+      checkbox.checked = nowChecked;
+      chip.classList.toggle("selected", nowChecked);
+      const toggle = chip.querySelector(".chip-toggle");
+      if (toggle) toggle.textContent = nowChecked ? "Incluido" : "Añadir";
+    });
+  });
 }
 
 async function renderCapsulas() {
@@ -754,22 +853,24 @@ async function renderCapsulas() {
 
   renderCapsulaPermittedCheckboxes();
   await loadCapsulasUser();
-  const base = (config.capsulasTiempo || []).filter((c) => canAccessCapsula({ ...c, permittedUsers: c.permittedUsers }));
-  const user = getCapsulasUser().filter((c) => canAccessCapsula(c));
+  const base = config.capsulasTiempo || [];
+  const user = getCapsulasUser();
   const capsulas = [...base, ...user].sort((a, b) => (a.fechaApertura || "").localeCompare(b.fechaApertura || ""));
 
   list.innerHTML = capsulas.map(cap => {
     const unlocked = isDateUnlocked(cap.fechaApertura);
     const isUser = !!cap.id;
-    const clickable = isUser && canAccessCapsula(cap);
+    const canAccess = canAccessCapsula(cap);
+    const clickable = isUser && canAccess;
     return `
-      <div class="content-item capsula-item ${unlocked ? "unlocked" : "locked"} ${isUser ? "user-added" : ""} ${clickable ? "clickable" : ""}"
+      <div class="content-item capsula-item ${unlocked ? "unlocked" : "locked"} ${isUser ? "user-added" : ""} ${clickable ? "clickable" : "blocked"}"
         ${isUser && cap.id ? `data-cap-id="${cap.id}"` : ""} ${clickable ? `onclick="openCapsulaDetail('${cap.id}')"` : ""}>
         <span class="capsula-status">${unlocked ? "🔓 ABIERTA" : "🔒 BLOQUEADA"}</span>
         <div class="item-body">
           <h4>${cap.titulo}</h4>
           ${!unlocked ? `<span class="item-fecha">Se abre: ${formatFecha(cap.fechaApertura)}</span>` : ""}
-          ${!unlocked && isUser ? `<span class="capsula-hint">Deja un mensaje antes de que se abra</span>` : ""}
+          ${!unlocked && isUser && canAccess ? `<span class="capsula-hint">Deja un mensaje antes de que se abra</span>` : ""}
+          ${!canAccess ? `<span class="capsula-hint">No puedes abrir esta cápsula.</span>` : ""}
         </div>
         ${isUser && currentUser && cap.createdBy === currentUser.userId ? `<button type="button" class="btn-delete-event" onclick="event.stopPropagation(); deleteCapsula('${cap.id}')" title="Eliminar">×</button>` : ""}
       </div>
@@ -798,8 +899,9 @@ async function addCapsula(e) {
   let permitted = Array.from(f.querySelectorAll('input[name="permitted"]:checked'))
     .map((cb) => cb.value?.trim())
     .filter(Boolean);
-  if (permitted.length > 0 && currentUser && !permitted.includes(currentUser.userId)) {
-    permitted = [currentUser.userId, ...permitted];
+  // En este modelo la lista es de BLOQUEADOS, nunca bloqueamos al creador
+  if (currentUser) {
+    permitted = permitted.filter((id) => id !== currentUser.userId);
   }
   const item = {
     titulo,
@@ -881,13 +983,24 @@ async function renderCapsulaDetail(cap) {
   if (textarea) textarea.disabled = !canAdd;
   if (submitBtn) submitBtn.disabled = !canAdd;
 
+  const mensajes = cap.mensajes || [];
   msgsEl.innerHTML = unlocked
-    ? (cap.mensajes || []).map((m) => `
+    ? mensajes.map((m) => {
+        const idAutor = m.createdBy || null;
+        const nombreAutor =
+          m.de ||
+          (idAutor && (config?.friends?.[idAutor]?.nombre || idAutor)) ||
+          "Anónimo";
+        return `
         <div class="capsula-msg">
-          <strong>${m.de}:</strong> ${m.msj}
+          <div class="capsula-msg-header">
+            <span class="capsula-msg-from">${nombreAutor}</span>
+          </div>
+          <div class="capsula-msg-body">${m.msj}</div>
         </div>
-      `).join("") || "<p class='empty-msg'>Aún no hay mensajes.</p>"
-    : `<p class="capsula-sealed">🔒 Los mensajes se mostrarán el ${formatFecha(cap.fechaApertura)}</p><p class="capsula-sealed-sub">${(cap.mensajes || []).length} persona(s) ya han dejado mensaje.</p>`;
+      `;
+      }).join("") || "<p class='empty-msg'>Aún no hay mensajes.</p>"
+    : `<p class="capsula-sealed">🔒 Los mensajes se mostrarán el ${formatFecha(cap.fechaApertura)}</p><p class="capsula-sealed-sub">${mensajes.length} persona(s) ya han dejado mensaje.</p>`;
 
   if (form) {
     const capIdInput = form.querySelector('input[name="capId"]');
@@ -985,8 +1098,8 @@ function transitionToPortal(data) {
   document.getElementById("friend-avatar").src = data.avatar;
   document.getElementById("data-name").textContent = data.nombre;
 
-  document.getElementById("access-btn").onclick = () => showCapsule(data);
-  document.getElementById("archivo-btn").onclick = () => showMemorias(currentFriendId);
+  const accessBtn = document.getElementById("access-btn");
+  if (accessBtn) accessBtn.onclick = () => showCapsule(data);
 }
 
 function showCapsule(data) {
@@ -1014,43 +1127,7 @@ function showCapsule(data) {
 }
 
 // --- Archivo de memorias por persona ---
-function showMemorias(userId) {
-  const data = config?.friends[userId];
-  if (!data) return;
-
-  document.getElementById("memorias-title").textContent = `ARCHIVO: ${data.nombre.toUpperCase()}`;
-  document.getElementById("memorias-subtitle").textContent = "Fotos, mensajes y recuerdos";
-
-  const list = document.getElementById("memorias-list");
-  const memorias = data.memorias || [];
-
-  list.innerHTML = memorias.length ? memorias.map(m => `
-    <div class="content-item memoria-item">
-      <span class="item-fecha">${m.fecha || ""}</span>
-      <div class="item-body">
-        <h4>${m.titulo}</h4>
-        <p>${m.contenido || ""}</p>
-        ${(m.fotos || []).length ? `
-          <div class="photo-grid small">
-            ${m.fotos.map(f => `<img src="${f}" alt="" decoding="async" loading="lazy">`).join("")}
-          </div>
-        ` : ""}
-      </div>
-    </div>
-  `).join("") : "<p class='empty-msg'>Aún no hay memorias en este archivo.</p>";
-
-  showScreen("memorias-screen");
-}
-
-function showMemoriasBack() {
-  if (!currentFriendId) return goToSelector();
-  const data = config.friends[currentFriendId];
-  showScreen("portal-screen");
-  document.getElementById("friend-avatar").src = data.avatar;
-  document.getElementById("data-name").textContent = data.nombre;
-  document.getElementById("access-btn").onclick = () => showCapsule(data);
-  document.getElementById("archivo-btn").onclick = () => showMemorias(currentFriendId);
-}
+// (antigua sección Archivo eliminada)
 
 // --- Auth ---
 const fetchOpts = { credentials: "include" };
@@ -1930,26 +2007,47 @@ async function renderPresenceMenu() {
     }
   } catch {}
 
-  const items = order.map(id => {
+  // Orden: primero conectados (respetando orden original), luego resto.
+  const entries = order.map(id => {
     const data = friends[id] || {};
     const nombre = data.nombre || id;
     const avatar = data.avatar || "";
     const online = onlineIds.has(id);
-    const avatarEl = avatar
-      ? `<img class="presence-avatar" src="${avatar}" alt="">`
-      : '<span class="presence-avatar-placeholder">?</span>';
-    const statusClass = online ? "online" : "offline";
-    const statusTitle = online ? "En línea" : "Desconectado";
-    return `
-      <div class="presence-item">
+    const isMe = meId && id === meId;
+    return { id, data, nombre, avatar, online, isMe };
+  });
+
+  entries.sort((a, b) => {
+    if (a.online === b.online) return 0;
+    return a.online ? -1 : 1;
+  });
+
+  const items = entries
+    .map(({ id, nombre, avatar, online, isMe }) => {
+      const avatarEl = avatar
+        ? `<img class="presence-avatar" src="${avatar}" alt="">`
+        : '<span class="presence-avatar-placeholder">?</span>';
+      const statusClass = online ? "online" : "offline";
+      const statusTitle = online ? "En línea" : "Desconectado";
+      const meLabel = isMe ? '<span class="presence-me-pill">Tú</span>' : "";
+      const statusText = online ? "En línea ahora" : "Últ. vez desconocida";
+      return `
+      <button type="button" class="presence-item ${online ? "is-online" : ""}" onclick="openProfileScreen('${id}')">
         <div class="presence-avatar-wrap">
           ${avatarEl}
           <span class="presence-dot ${statusClass}" title="${statusTitle}"></span>
         </div>
-        <span class="presence-name">${nombre}</span>
-      </div>
+        <div class="presence-body">
+          <div class="presence-name-row">
+            <span class="presence-name">${nombre}</span>
+            ${meLabel}
+          </div>
+          <span class="presence-status ${statusClass}">${statusText}</span>
+        </div>
+      </button>
     `;
-  }).join("");
+    })
+    .join("");
 
   const onlineCount = order.filter(id => onlineIds.has(id)).length;
   const badge = document.getElementById("presence-badge");
@@ -1958,7 +2056,16 @@ async function renderPresenceMenu() {
     badge.classList.toggle("hidden", onlineCount === 0);
   }
 
-  dropdown.innerHTML = `<div class="presence-header">Conectados</div>${items || '<div class="presence-item"><span class="presence-name">Sin contactos</span></div>'}`;
+  const headerLabel =
+    onlineCount === 0
+      ? "Sin contactos conectados"
+      : onlineCount === 1
+      ? "1 contacto conectado"
+      : `${onlineCount} contactos conectados`;
+
+  dropdown.innerHTML = `<div class="presence-header">${headerLabel}</div>${
+    items || '<div class="presence-item"><span class="presence-name">Sin contactos</span></div>'
+  }`;
 }
 
 function closeHubDropdowns() {
@@ -2696,20 +2803,57 @@ function closeChangePassword() {
   document.getElementById("change-password-modal")?.classList.add("hidden");
 }
 
+function togglePasswordVisibility(btn) {
+  if (!btn) return;
+  const wrapper = btn.closest(".password-field");
+  if (!wrapper) return;
+  const input = wrapper.querySelector("input");
+  if (!input) return;
+  const isHidden = input.type === "password";
+  input.type = isHidden ? "text" : "password";
+  btn.textContent = isHidden ? "🙈" : "👁";
+}
+
 async function submitChangePassword(e) {
   e.preventDefault();
   const f = e.target;
   const err = document.getElementById("change-pw-error");
+  const btn = f.querySelector('button[type="submit"]');
   err.textContent = "";
   err.classList.add("hidden");
+  const current = f.currentPassword.value || "";
+  const next = f.newPassword.value || "";
+  const confirm = f.confirmPassword ? f.confirmPassword.value || "" : next;
+
+  // Validaciones básicas en cliente
+  if (next.length < 6) {
+    err.textContent = "La nueva contraseña debe tener al menos 6 caracteres.";
+    err.classList.remove("hidden");
+    return;
+  }
+  if (next === current) {
+    err.textContent = "La nueva contraseña no puede ser igual que la actual.";
+    err.classList.remove("hidden");
+    return;
+  }
+  if (next !== confirm) {
+    err.textContent = "Las nuevas contraseñas no coinciden.";
+    err.classList.remove("hidden");
+    return;
+  }
+
   try {
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+    }
     const res = await fetch(`${API_BASE}/api/auth/change-password`, {
       ...fetchOpts,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        currentPassword: f.currentPassword.value,
-        newPassword: f.newPassword.value,
+        currentPassword: current,
+        newPassword: next,
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -2723,6 +2867,11 @@ async function submitChangePassword(e) {
   } catch {
     err.textContent = "Error de conexión";
     err.classList.remove("hidden");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "GUARDAR";
+    }
   }
 }
 

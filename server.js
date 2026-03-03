@@ -55,6 +55,19 @@ function readFriends() {
   }
 }
 
+function isDateUnlocked(fecha) {
+  if (!fecha || typeof fecha !== "string") return false;
+  const parts = fecha.split("-");
+  if (parts.length !== 2) return false;
+  const mes = Number(parts[0]);
+  const dia = Number(parts[1]);
+  if (!mes || !dia) return false;
+  const hoy = new Date();
+  const hoyNum = (hoy.getMonth() + 1) * 100 + hoy.getDate();
+  const fechaNum = mes * 100 + dia;
+  return hoyNum >= fechaNum;
+}
+
 function pushNotification(data, notif) {
   data.notifications = data.notifications || [];
   data.notifications.unshift({
@@ -168,41 +181,46 @@ app.delete("/api/eventos/:id", (req, res) => {
 });
 
 // --- Cápsulas del tiempo ---
+// Modelo simple y claro:
+// - capsulasTiempo: [{ id, titulo, fechaApertura (MM-DD), blockedUsers?: string[], createdBy, mensajes: [] }]
+// - blockedUsers: usuarios que VEN la cápsula en la lista pero NO pueden abrirla ni escribir.
+// - El creador siempre puede abrir/escribir.
+
 app.get("/api/capsulas", (req, res) => {
   const data = readUserData();
-  let caps = data.capsulasTiempo || [];
-  const userId = req.userId;
-  if (userId) {
-    // Filtrado básico: si tiene permittedUsers, solo las que incluyan al usuario
-    caps = caps.filter((c) => {
-      if (!Array.isArray(c.permittedUsers) || c.permittedUsers.length === 0) return true;
-      return c.permittedUsers.includes(userId);
-    });
-  }
+  const caps = data.capsulasTiempo || [];
   res.json(caps);
 });
 
 app.post("/api/capsulas", (req, res) => {
   const data = readUserData();
-  const { titulo, fechaApertura, permittedUsers } = req.body || {};
+  const { titulo, fechaApertura, blockedUsers } = req.body || {};
+
+  const userId = req.userId || null;
+  const normalizedBlocked =
+    Array.isArray(blockedUsers) && blockedUsers.length
+      ? blockedUsers.filter((id) => id && id !== userId)
+      : [];
+
   const item = {
     id: "cap_" + Date.now(),
-    titulo: titulo || "",
-    fechaApertura: fechaApertura || "",
-    permittedUsers: Array.isArray(permittedUsers) && permittedUsers.length ? permittedUsers : undefined,
-    createdBy: req.userId || undefined,
+    titulo: String(titulo || ""),
+    fechaApertura: String(fechaApertura || ""),
+    blockedUsers: normalizedBlocked.length ? normalizedBlocked : undefined,
+    createdBy: userId || undefined,
     mensajes: [],
   };
+
   data.capsulasTiempo = data.capsulasTiempo || [];
   data.capsulasTiempo.push(item);
 
   const friends = readFriends();
-  const nombre = req.userId ? (friends.friends?.[req.userId]?.nombre || req.userId) : "Alguien";
+  const nombre = userId ? (friends.friends?.[userId]?.nombre || userId) : "Alguien";
   pushNotification(data, {
     type: "capsula",
-    title: titulo || "Nueva cápsula",
+    title: item.titulo || "Nueva cápsula",
     subtitle: `${nombre} creó una cápsula del tiempo`,
-    createdBy: req.userId,
+    createdBy: userId,
     screen: "capsulas-screen",
   });
 
@@ -215,6 +233,16 @@ app.get("/api/capsulas/:id", (req, res) => {
   const data = readUserData();
   const cap = (data.capsulasTiempo || []).find((c) => c.id === id);
   if (!cap) return res.status(404).json({ ok: false, error: "No encontrada" });
+
+  const userId = req.userId || null;
+  const blocked = Array.isArray(cap.blockedUsers) ? cap.blockedUsers : [];
+  const isOwner = userId && cap.createdBy && cap.createdBy === userId;
+  const isBlocked = userId && blocked.includes(userId);
+
+  if (!isOwner && isBlocked) {
+    return res.status(403).json({ ok: false, error: "No tienes acceso a esta cápsula." });
+  }
+
   res.json(cap);
 });
 
@@ -233,11 +261,26 @@ app.post("/api/capsulas/:id/mensajes", (req, res) => {
   const caps = data.capsulasTiempo || [];
   const cap = caps.find((c) => c.id === id);
   if (!cap) return res.status(404).json({ ok: false, error: "No encontrada" });
+
+  const userId = req.userId || null;
+  const blocked = Array.isArray(cap.blockedUsers) ? cap.blockedUsers : [];
+  const isOwner = userId && cap.createdBy && cap.createdBy === userId;
+  const isBlocked = userId && blocked.includes(userId);
+
+  if (!isOwner && isBlocked) {
+    return res.status(403).json({ ok: false, error: "No tienes permiso para escribir en esta cápsula." });
+  }
+
   cap.mensajes = cap.mensajes || [];
+  const friends = readFriends();
+  const nombre =
+    (userId && (friends.friends?.[userId]?.nombre || userId)) ||
+    "Alguien";
   const mensaje = {
     id: "msg_" + Date.now(),
     msj: String(msj || "").slice(0, 1000),
-    createdBy: req.userId || undefined,
+    createdBy: userId || undefined,
+    de: nombre,
     createdAt: new Date().toISOString(),
   };
   cap.mensajes.push(mensaje);

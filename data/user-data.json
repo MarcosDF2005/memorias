@@ -1,7 +1,7 @@
 {
   "users": {
     "Marcos": {
-      "passwordHash": "$2a$10$B5pwtjLwa6HGdLkTeTjyKeYLe3sy1XslzEhq5UI02o4wXxc/.BS1q"
+      "passwordHash": "$2a$10$0dyo/rXaGZJW0/RWLtjmIOKcXEumjAPzhnmbKPgExZTF0F2YQ1D4C"
     },
     "Andrea": {
       "passwordHash": "$2a$10$DRJ0cPo6SuCreIjMSiOsGO6k1/crjdhL7e0ep7Mxc/qVqtxprv5/2"
@@ -35,7 +35,75 @@
     }
   },
   "calendario": [],
-  "eventos": [],
-  "capsulasTiempo": [],
+  "eventos": [
+    {
+      "id": "evt_1772529493489",
+      "fecha": "2026-03-04",
+      "titulo": "Viaje a Rota",
+      "createdBy": "Marcos"
+    }
+  ],
+  "capsulasTiempo": [
+    {
+      "id": "cap_1772532603546",
+      "titulo": "mario",
+      "fechaApertura": "03-04",
+      "permittedUsers": [
+        "Mario"
+      ],
+      "createdBy": "Marcos",
+      "mensajes": []
+    },
+    {
+      "id": "cap_1772532620108",
+      "titulo": "Marcos",
+      "fechaApertura": "03-04",
+      "permittedUsers": [
+        "Mario"
+      ],
+      "createdBy": "Marcos",
+      "mensajes": []
+    },
+    {
+      "id": "cap_1772533068476",
+      "titulo": "Mario",
+      "fechaApertura": "03-04",
+      "permittedUsers": [
+        "Mario"
+      ],
+      "createdBy": "Marcos",
+      "mensajes": []
+    },
+    {
+      "id": "cap_1772533149004",
+      "titulo": "mario",
+      "fechaApertura": "03-04",
+      "permittedUsers": [
+        "Mario"
+      ],
+      "createdBy": "Marcos",
+      "mensajes": []
+    },
+    {
+      "id": "cap_1772533607771",
+      "titulo": "Mario",
+      "fechaApertura": "03-04",
+      "permittedUsers": [
+        "Mario"
+      ],
+      "createdBy": "Marcos",
+      "mensajes": []
+    },
+    {
+      "id": "cap_1772533905283",
+      "titulo": "Mario",
+      "fechaApertura": "03-04",
+      "permittedUsers": [
+        "Mario"
+      ],
+      "createdBy": "Marcos",
+      "mensajes": []
+    }
+  ],
   "notifications": []
 }

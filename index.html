@@ -27,12 +27,15 @@
         </div>
         <div class="form-row">
           <label class="form-label">Contraseña</label>
-          <input type="password" name="password" class="form-input" placeholder="Tu contraseña" autocomplete="current-password" required>
+          <div class="password-field">
+            <input type="password" name="password" class="form-input" placeholder="Tu contraseña" autocomplete="current-password" required>
+            <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)" aria-label="Mostrar u ocultar contraseña">👁</button>
+          </div>
         </div>
         <p id="login-error" class="login-error hidden"></p>
         <button type="submit" class="sci-fi-btn btn-login">ENTRAR</button>
+        <button type="button" class="sci-fi-btn secondary btn-guest" onclick="continueAsGuest()">Continuar sin login</button>
       </form>
-      <button type="button" class="sci-fi-btn secondary btn-guest" onclick="continueAsGuest()">Continuar sin login</button>
     </div>
   </section>
 
@@ -51,6 +54,7 @@
           </button>
           <div class="hub-profile-menu hidden" id="hub-profile-menu" role="menu" aria-labelledby="hub-profile-btn">
             <div class="profile-summary" id="profile-summary"><!-- Rellenado por JS --></div>
+            <button type="button" class="menu-item" onclick="openProfileScreen()" role="menuitem">👤 Mi perfil</button>
             <div
               id="streak-widget"
               class="streak-widget profile-streak-widget"
@@ -116,12 +120,26 @@
         <form onsubmit="submitChangePassword(event)">
           <div class="form-row">
             <label>Contraseña actual</label>
-            <input type="password" name="currentPassword" required>
+            <div class="password-field">
+              <input type="password" name="currentPassword" autocomplete="current-password" required>
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)" aria-label="Mostrar u ocultar contraseña">👁</button>
+            </div>
           </div>
           <div class="form-row">
             <label>Nueva contraseña</label>
-            <input type="password" name="newPassword" minlength="4" required>
+            <div class="password-field">
+              <input type="password" name="newPassword" minlength="6" autocomplete="new-password" required>
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)" aria-label="Mostrar u ocultar contraseña">👁</button>
+            </div>
           </div>
+          <div class="form-row">
+            <label>Repite la nueva contraseña</label>
+            <div class="password-field">
+              <input type="password" name="confirmPassword" minlength="6" autocomplete="new-password" required>
+              <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)" aria-label="Mostrar u ocultar contraseña">👁</button>
+            </div>
+          </div>
+          <p class="form-hint small-hint">Mínimo 6 caracteres. Mejor si combinas letras y números.</p>
           <p id="change-pw-error" class="login-error hidden"></p>
           <button type="submit" class="sci-fi-btn">GUARDAR</button>
         </form>
@@ -276,6 +294,29 @@
     </div>
   </section>
 
+  <!-- Perfil tipo galería -->
+  <section id="profile-screen" class="screen hidden">
+    <div class="cyber-card profile-card">
+      <header class="card-header profile-header">
+        <button class="sci-fi-btn back-btn" onclick="goToHub()">← VOLVER</button>
+        <div class="profile-hero">
+          <div class="profile-avatar-lg-wrap">
+            <img id="profile-avatar-lg" class="profile-avatar-lg" src="" alt="Avatar perfil" decoding="async" loading="eager">
+          </div>
+          <div class="profile-hero-text">
+            <h2 id="profile-name" class="title-glow">TU PERFIL</h2>
+            <p id="profile-subtitle" class="subtitle">Tus recuerdos en imágenes</p>
+            <div class="profile-stats" id="profile-stats"></div>
+          </div>
+        </div>
+      </header>
+      <div class="profile-section">
+        <h3 class="section-title">📷 Tus fotos</h3>
+        <div id="profile-photos-grid" class="profile-photos-grid"></div>
+      </div>
+    </div>
+  </section>
+
   <section id="selector-screen" class="screen hidden">
     <div class="cyber-card selector-card">
       <header class="card-header selector-header">
@@ -305,7 +346,6 @@
       <h1 id="data-name">---</h1>
       <div class="portal-buttons">
         <button id="access-btn" class="sci-fi-btn">RECONSTRUIR NÚCLEO</button>
-        <button id="archivo-btn" class="sci-fi-btn secondary">ABRIR ARCHIVO</button>
       </div>
     </div>
   </section>
@@ -523,22 +563,10 @@
               <span class="label-text">Tu mensaje</span>
             </label>
             <textarea name="msj" class="form-input form-textarea" placeholder="Escribe tu mensaje para esta cápsula..." required rows="3"></textarea>
+            <button type="submit" class="sci-fi-btn btn-add-full">Enviar mensaje</button>
           </div>
-          <button type="submit" class="sci-fi-btn btn-add-full">Enviar mensaje</button>
         </form>
       </div>
-    </div>
-  </section>
-
-  <!-- Archivo/Memorias de una persona -->
-  <section id="memorias-screen" class="screen hidden">
-    <div class="cyber-card wide-card">
-      <header class="card-header">
-        <h2 id="memorias-title" class="title-glow">ARCHIVO DE MEMORIAS</h2>
-        <p id="memorias-subtitle" class="subtitle"></p>
-        <button class="sci-fi-btn back-btn" onclick="showMemoriasBack()">← VOLVER</button>
-      </header>
-      <div id="memorias-list" class="content-list"></div>
     </div>
   </section>
 
